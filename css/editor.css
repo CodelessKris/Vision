@@ -303,3 +303,286 @@
     flex: 1;
   }
 }
+
+/* =============================================================================
+   Sprint 2 — Clipart modal, achtergrond-popover, WordArt/transform secties
+   ============================================================================= */
+
+/* --- Modal overlay -------------------------------------------------------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.78);
+  padding: 16px;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-content {
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: var(--border-width) solid var(--color-bg-surface);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: var(--font-size-h2);
+  color: var(--color-text-primary);
+}
+
+/* --- Clipart modal --------------------------------------------------------- */
+
+.clipart-modal-content {
+  width: min(900px, 92vw);
+}
+
+.clipart-controls {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: var(--border-width) solid var(--color-bg-surface);
+}
+
+.clipart-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clipart-search-row label {
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.clipart-search-row input[type="search"] {
+  flex: 1;
+  min-height: var(--target-min);
+  font-size: var(--font-size-label);
+}
+
+.clipart-categories {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.clipart-categories button {
+  min-width: auto;
+  padding: 8px 14px;
+  font-size: var(--font-size-small);
+}
+
+.clipart-grid-container {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.clipart-empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  text-align: center;
+  padding: 32px 0;
+}
+
+.clipart-grid [role="row"] {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Clipart-cel: <button> zonder .btn zodat panel-stijlen niet doorlekken (CLAUDE.md) */
+.clipart-cell {
+  width: 84px;
+  height: 84px;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-bg-surface);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-speed), background-color var(--transition-speed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clipart-cell { transition: none; }
+}
+
+.clipart-cell:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-bg-surface);
+}
+
+.clipart-cell:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.clipart-cell svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  display: block;
+}
+
+/* --- Achtergrond-popover -------------------------------------------------- */
+
+.toolbar-popover-anchor {
+  position: relative;
+}
+
+.bg-popover {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  z-index: 200;
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 220px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.bg-popover[hidden] {
+  display: none;
+}
+
+/* Op smalle schermen (mobiel / 200% zoom): popover onder de knop */
+@media (max-width: 768px) {
+  .toolbar-popover-anchor {
+    position: static;
+  }
+  .bg-popover {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 80px;
+    width: auto;
+  }
+}
+
+/* --- WordArt & Transform: uitklapbare <details> secties ------------------ */
+
+.wordart-section,
+.transform-section {
+  margin-top: 16px;
+  border: var(--border-width) solid var(--color-bg-surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.wordart-section > summary,
+.transform-section > summary {
+  padding: 12px 16px;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+  cursor: pointer;
+  min-height: var(--target-min);
+  display: flex;
+  align-items: center;
+  list-style: none; /* verberg standaard driehoek in Firefox */
+}
+
+/* Verberg standaard Chrome/Safari driehoek */
+.wordart-section > summary::-webkit-details-marker,
+.transform-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.wordart-section > summary::before,
+.transform-section > summary::before {
+  content: '\25B6'; /* ▶ */
+  margin-right: 10px;
+  font-size: 12px;
+  transition: transform var(--transition-speed);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordart-section > summary::before,
+  .transform-section > summary::before {
+    transition: none;
+  }
+}
+
+.wordart-section[open] > summary::before,
+.transform-section[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.wordart-section > .properties-grid,
+.transform-section > .properties-grid {
+  padding: 16px;
+}
+
+/* Checkbox rij in WordArt (slagschaduw aan/uit) */
+.checkbox-row {
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-label {
+  font-size: var(--font-size-label);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+/* Scale slider in transform-sectie */
+#prop-scale-slider {
+  flex: 1;
+}
+
+#prop-scale,
+#prop-rotate {
+  width: 72px;
+  min-height: var(--target-min);
+  text-align: right;
+  font-size: var(--font-size-label);
+}
+
+/* Dupliceer-knop: volledige breedte binnen z'n prop-group */
+#btn-duplicate {
+  width: 100%;
+}

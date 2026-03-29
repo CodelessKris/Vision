@@ -101,6 +101,69 @@
                  U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* --- @font-face: Kaartfonts (lokaal gebundeld, Sprint 2) ---
+   Bestanden te downloaden via Google Fonts (open licentie) en op te slaan in assets/fonts/:
+   Pacifico-Regular.woff2, Caveat-Regular.woff2, Lobster-Regular.woff2,
+   DancingScript-Regular.woff2, PermanentMarker-Regular.woff2,
+   PatrickHand-Regular.woff2, Satisfy-Regular.woff2
+*/
+
+@font-face {
+  font-family: 'Pacifico';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Pacifico-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Caveat-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lobster';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Lobster-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Dancing Script';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/DancingScript-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Permanent Marker';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/PermanentMarker-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Patrick Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/PatrickHand-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Satisfy';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Satisfy-Regular.woff2') format('woff2');
+}
+
 /* --- CSS Custom Properties (dark mode standaard) --- */
 :root {
   /* Achtergronden — geen puur zwart, geen puur wit in UI-chrome */

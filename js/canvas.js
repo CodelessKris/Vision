@@ -148,7 +148,7 @@ var KaartCanvas = (function () {
     fabricCanvas.renderAll();
   }
 
-  function switchSide(newSide) {
+  function switchSide(newSide, onDone) {
     if (!fabricCanvas || newSide === currentSide) return;
 
     /* Snapshot huidige zijde */
@@ -167,13 +167,19 @@ var KaartCanvas = (function () {
         fabricCanvas.backgroundColor = cardState[newSide].background;
         fabricCanvas.renderAll();
         if (deselectionCallback) deselectionCallback();
+        if (onDone) onDone();
       });
     } else {
       fabricCanvas.clear();
       fabricCanvas.backgroundColor = cardState[newSide].background;
       fabricCanvas.renderAll();
       if (deselectionCallback) deselectionCallback();
+      if (onDone) onDone();
     }
+  }
+
+  function setCurrentSide(side) {
+    currentSide = side;
   }
 
   function addText(options) {
@@ -217,6 +223,47 @@ var KaartCanvas = (function () {
     obj.set({ left: obj.left + dx, top: obj.top + dy });
     obj.setCoords();
     fabricCanvas.renderAll();
+    fabricCanvas.fire('object:modified', { target: obj });
+  }
+
+  /* snapshotCurrentSide — sla actieve zijde op in cardState zonder te wisselen.
+     Gebruikt door KaartUndo voordat het een undo-entry van een andere zijde herstelt. */
+  function snapshotCurrentSide() {
+    if (!fabricCanvas) return;
+    cardState[currentSide].json       = fabricCanvas.toJSON();
+    cardState[currentSide].background = fabricCanvas.backgroundColor;
+  }
+
+  /* setBackground — stel achtergrondkleur in voor de actieve zijde (Sprint 2). */
+  function setBackground(color) {
+    if (!fabricCanvas) return;
+    fabricCanvas.backgroundColor = color;
+    cardState[currentSide].background = color;
+    fabricCanvas.renderAll();
+  }
+
+  /* addImage — laad een SVG-string via Fabric.js en voeg toe aan het canvas (Sprint 2). */
+  function addImage(svgString, callback) {
+    if (!fabricCanvas) return;
+    fabric.loadSVGFromString(svgString, function (objects, opts) {
+      var group = fabric.util.groupSVGElements(objects, opts);
+      /* Schaal zodat het grootste zijde ≈ 30% van de canvasbreedte is */
+      var maxDim = Math.max(group.width || 1, group.height || 1);
+      var targetSize = fabricCanvas.width * 0.3;
+      var scale = targetSize / maxDim;
+      group.set({
+        left:    fabricCanvas.width  / 2,
+        top:     fabricCanvas.height / 2,
+        originX: 'center',
+        originY: 'center',
+        scaleX:  scale,
+        scaleY:  scale
+      });
+      fabricCanvas.add(group);
+      fabricCanvas.setActiveObject(group);
+      fabricCanvas.renderAll();
+      if (callback) callback(group);
+    });
   }
 
   /* getState / loadState — publieke API voor Sprint 3 (.kaart bestandsformaat).
@@ -257,12 +304,16 @@ var KaartCanvas = (function () {
   return {
     init:               init,
     addText:            addText,
+    addImage:           addImage,
     switchSide:         switchSide,
     getCurrentSide:     function () { return currentSide; },
     getActiveObject:    function () { return fabricCanvas ? fabricCanvas.getActiveObject() : null; },
     removeActiveObject: removeActiveObject,
     moveActiveObject:   moveActiveObject,
     getCanvas:          function () { return fabricCanvas; },
+    snapshotCurrentSide: snapshotCurrentSide,
+    setCurrentSide:     setCurrentSide,
+    setBackground:      setBackground,
     getState:           getState,
     loadState:          loadState,
     onSelectionChange:  function (cb) { selectionCallback    = cb; },

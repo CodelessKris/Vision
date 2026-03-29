@@ -81,34 +81,40 @@ Requirements: [PRD-kaarteditor.md](PRD-kaarteditor.md) | Architectuur: [CLAUDE.m
 ## Sprint 2 — Elementen & stijlen
 
 ### Clipart-bibliotheek
-- [ ] `js/clipart.js` — bibliotheekpaneel met grid-layout (FR-14)
-- [ ] 40+ SVG's bundelen per categorie: Verjaardag, Feest, Natuur, Dieren, Overig (FR-14, FR-15)
-- [ ] Zoek-/filterveld met live filtering (FR-16)
-- [ ] Beschrijvende `alt`-labels op alle cliparts (FR-17, A-14)
-- [ ] Grid-toetsenbordnavigatie: pijltjes + Enter om te selecteren (A-12, FR-17)
-- [ ] ARIA `role="grid"` pattern (A-12)
-- [ ] Focustrap in modal + focusterugkeer bij sluiten (A-04)
+- [x] `js/clipart.js` — bibliotheekpaneel met grid-layout (FR-14)
+- [x] 40+ SVG's gebundeld per categorie: Verjaardag, Feest, Natuur, Dieren, Overig — 40 items inline als stringconstanten (FR-14, FR-15)
+- [x] Zoek-/filterveld met live filtering + debounce (FR-16)
+- [x] Beschrijvende `aria-label` op alle clipart-cellen (FR-17, A-14)
+- [x] Grid-toetsenbordnavigatie: pijltjes + Enter/Home/End om te selecteren (A-12, FR-17)
+- [x] ARIA `role="grid"` + `role="row"` + `role="gridcell"` pattern (A-12)
+- [x] Focustrap in modal + focusterugkeer bij sluiten (A-04)
 
 ### WordArt-effecten
-- [ ] Slagschaduw: kleur + offset instellingen (FR-12)
-- [ ] Omlijning (stroke): kleur + dikte instellingen (FR-12)
-- [ ] Achtergrondvlak achter tekst (FR-12)
+- [x] Slagschaduw: aan/uit schakelaar + kleur + offset instellingen (FR-12)
+- [x] Omlijning (stroke): kleur + dikte instellingen (FR-12)
+- [x] Achtergrondvlak achter tekst (FR-12)
 
 ### Undo/Redo
-- [ ] `js/undo.js` — undo/redo-stack, minimaal 20 stappen (FR-10)
-- [ ] `Ctrl+Z` undo, `Ctrl+Y` redo gekoppeld (A-05)
-- [ ] Undo/redo-knoppen in werkbalk met `aria-label` (A-07)
+- [x] `js/undo.js` — undo/redo-stack, 20 stappen, FIFO overflow (FR-10)
+- [x] `Ctrl+Z` undo, `Ctrl+Y` redo gekoppeld — placeholder vervangen door echte handler (A-05)
+- [x] Undo/redo-knoppen in werkbalk, `aria-disabled` dynamisch beheerd (A-07)
+- [x] Automatische zijdewisseling bij cross-side undo
 
 ### Achtergrond
-- [ ] Achtergrondkleur instellen per canvaszijde (FR-12 / should-have)
-- [ ] Hex-invoer als alternatief voor kleurpicker (A-13)
+- [x] Achtergrondkleur instellen per canvaszijde via popover (FR-12 / should-have)
+- [x] Hex-invoer als alternatief voor kleurpicker (A-13)
 
 ### Elementbewerking
-- [ ] Schalen via hoekhandvaten (FR-07)
-- [ ] Schalen via numerieke invoer in eigenschappenpaneel (FR-07)
-- [ ] Roteren via rotatiehandvat (FR-08)
-- [ ] Roteren via numerieke gradeninvoer (FR-08)
-- [ ] Element dupliceren (should-have)
+- [x] Schalen via hoekhandvaten (FR-07) — ingebouwd Fabric.js
+- [x] Schalen via numerieke invoer in eigenschappenpaneel (FR-07)
+- [x] Roteren via rotatiehandvat (FR-08) — ingebouwd Fabric.js
+- [x] Roteren via numerieke gradeninvoer (FR-08)
+- [x] Element dupliceren via knop + `Ctrl+D` (should-have)
+
+### Kaartfonts (Sprint 2)
+- [x] 7 kaartfonts lokaal gebundeld: Pacifico, Caveat, Lobster, Dancing Script, Permanent Marker, Patrick Hand, Satisfy
+- [x] @font-face declaraties toegevoegd aan `css/base.css`
+- [x] Font-opties toegevoegd aan `#prop-font` select
 
 ---
 

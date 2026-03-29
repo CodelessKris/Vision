@@ -83,7 +83,12 @@
       panel.hidden = panel.getAttribute('aria-labelledby') !== tabId;
     });
 
-    KaartCanvas.switchSide(side);
+    /* Pauzeer undo-opname tijdens wisselen — loadFromJSON in switchSide vuurt
+       anders object:added events die onterecht als undo-stap worden opgeslagen.
+       resume() wordt aangeroepen vanuit de switchSide-callback zodra loadFromJSON
+       klaar is — niet via een vaste timeout die te vroeg kan vuren. */
+    KaartUndo.pause();
+    KaartCanvas.switchSide(side, KaartUndo.resume);
 
     announceStatus(side === 'front' ? 'Voorkant actief' : 'Binnenkant actief');
 
@@ -160,8 +165,25 @@
     /* Ctrl+Z en Ctrl+Y NIET onderscheppen in formuliervelden —
        daar verwacht de gebruiker dat de browser de tekst-undo/redo afhandelt. */
     if (!isFormField) {
-      if (key === 'z') { e.preventDefault(); announceStatus('Ongedaan maken is beschikbaar in Sprint 2.'); }
-      if (key === 'y') { e.preventDefault(); announceStatus('Opnieuw is beschikbaar in Sprint 2.'); }
+      if (key === 'z') { e.preventDefault(); doUndo(); }
+      if (key === 'y') { e.preventDefault(); doRedo(); }
+      if (key === 'd') { e.preventDefault(); KaartToolbar.duplicateElement(); }
+    }
+  }
+
+  function doUndo() {
+    if (KaartUndo.undo()) {
+      announceStatus('Ongedaan gemaakt');
+    } else {
+      announceStatus('Niets om ongedaan te maken');
+    }
+  }
+
+  function doRedo() {
+    if (KaartUndo.redo()) {
+      announceStatus('Opnieuw uitgevoerd');
+    } else {
+      announceStatus('Niets om opnieuw uit te voeren');
     }
   }
 
@@ -189,6 +211,8 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     KaartCanvas.init();
+    KaartUndo.init();      /* na canvas, vóór toolbar */
+    KaartClipart.init();   /* vóór toolbar zodat open() beschikbaar is */
     KaartToolbar.init();
     KaartProperties.init();
 
@@ -198,6 +222,29 @@
     initTabs();
     initKeyboardShortcuts();
 
+    /* Undo/redo knoppen (aria-disabled wordt dynamisch beheerd door KaartUndo) */
+    var btnUndo = document.getElementById('btn-undo');
+    if (btnUndo) {
+      btnUndo.addEventListener('click', function () {
+        if (btnUndo.getAttribute('aria-disabled') !== 'true') {
+          doUndo();
+        } else {
+          announceStatus('Niets om ongedaan te maken.');
+        }
+      });
+    }
+
+    var btnRedo = document.getElementById('btn-redo');
+    if (btnRedo) {
+      btnRedo.addEventListener('click', function () {
+        if (btnRedo.getAttribute('aria-disabled') !== 'true') {
+          doRedo();
+        } else {
+          announceStatus('Niets om opnieuw uit te voeren.');
+        }
+      });
+    }
+
     var btnSave = document.getElementById('btn-save');
     if (btnSave) {
       btnSave.addEventListener('click', function () {
@@ -205,10 +252,22 @@
       });
     }
 
+    /* Sync aria-expanded op <details>/<summary> — Firefox + NVDA kondigt
+       expanded/collapsed niet altijd aan via native <details>-semantiek. */
+    document.querySelectorAll('details').forEach(function (det) {
+      var summary = det.querySelector('summary');
+      if (!summary) return;
+      summary.setAttribute('aria-expanded', det.open ? 'true' : 'false');
+      det.addEventListener('toggle', function () {
+        summary.setAttribute('aria-expanded', det.open ? 'true' : 'false');
+      });
+    });
+
     /* Toekomstige knoppen: klik toont beschikbaarheidsmelding.
-       Ze hebben geen native disabled — ze blijven daardoor in de tabvolgorde
-       zodat toetsenbordgebruikers ze kunnen ontdekken (aria-disabled="true"). */
+       Sprint-2-knoppen zijn nu actief en worden uitgesloten van deze handler. */
+    var sprint2Active = ['btn-undo', 'btn-redo', 'btn-add-clipart', 'btn-background', 'btn-save'];
     document.querySelectorAll('[aria-disabled="true"]').forEach(function (btn) {
+      if (sprint2Active.indexOf(btn.id) !== -1) return;
       btn.addEventListener('click', function () {
         var label = btn.getAttribute('aria-label') || '';
         var match = label.match(/beschikbaar in (Sprint \d+)/i);
