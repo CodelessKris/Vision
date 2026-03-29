@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Kaarteditor** — a web-based greeting card editor for a user with glaucoma. The full spec is in [PRD-kaarteditor.md](PRD-kaarteditor.md). This repo is currently in the planning phase; implementation starts with Sprint 1.
+**Kaarteditor** — a web-based greeting card editor for a user with glaucoma. The full spec is in [PRD-kaarteditor.md](PRD-kaarteditor.md). Sprint 1 is complete; see [PROGRESS.md](PROGRESS.md) for current status.
 
 **Critical principle**: Accessibility is not a feature — it is the architecture. Every technical and design decision must be evaluated against: *does this work for someone with glaucoma who navigates primarily by keyboard and depends on high contrast?*
 
@@ -31,7 +31,7 @@ To run: open `index.html` in Chrome/Edge. No server, no `npm install`, no build 
 
 ## Architecture
 
-### Structure (to be created)
+### Structure
 ```
 index.html          — start screen
 editor.html         — editor screen
@@ -68,6 +68,26 @@ JSON with Fabric.js canvas state for both sides and base64-embedded images:
   "embeddedAssets": { "id": "data:image/png;base64,..." }
 }
 ```
+
+---
+
+## Coding Conventions
+
+### Buttons
+- Every `<button>` needs `class="btn"` for visual styling — bare `button` selector only applies a minimal reset (protects Sprint 2 clipart elements from inheriting panel design)
+- Toggle buttons (alignment, bold/italic) additionally need `class="btn btn-toggle"` — required for `[aria-pressed]` CSS to apply
+- Future-sprint buttons: use `aria-disabled="true"` WITHOUT native `disabled` — keeps them in tab order; app.js registers click handlers that announce sprint availability
+
+### JavaScript
+- All JS uses IIFE exposing global namespace objects (`KaartCanvas`, `KaartToolbar`, `KaartProperties`) — no ES modules, app runs via `file://`
+- `utils.js` loads first and exports globals `announceStatus(msg)` and `debounce(fn, delay)` — never redeclare these locally in modules
+- Fabric.js `loadFromJSON()` is async — all post-load logic (deselectionCallback, renderAll, state sync) must go INSIDE the callback, not after it
+- Fabric.js does NOT fire `object:modified` for programmatic `.set()` calls — fire manually via `canvas.fire('object:modified', { target: obj })` so the Sprint 2 undo stack registers changes
+
+### Testing
+- Local dev server: `python3 -m http.server 8765` from project root, then open `http://localhost:8765/`
+- After editing files: navigate with `?v=N` query string in Playwright to bypass browser cache
+- Fabric.js logs many "alphabetical Baseline" warnings on Chrome 120+ — these are internal to Fabric.js and cannot be suppressed; ignore them
 
 ---
 
