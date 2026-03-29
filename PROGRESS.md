@@ -121,27 +121,27 @@ Requirements: [PRD-kaarteditor.md](PRD-kaarteditor.md) | Architectuur: [CLAUDE.m
 ## Sprint 3 — Opslag & export
 
 ### Opslaan/laden
-- [ ] `js/storage.js` — `.kaart` JSON-formaat implementatie (FR-20)
-- [ ] Opslaan via File System Access API (Chrome/Edge) (FR-18)
-- [ ] Opslaan via download-fallback (Firefox/Safari) (FR-18)
-- [ ] Openen via bestandskiezer-knop (FR-19)
-- [ ] Openen via drag-and-drop op startscherm (FR-19)
-- [ ] Afbeeldingen als base64 insluiten in `.kaart` bestand (FR-20)
+- [x] `js/storage.js` — `.kaart` JSON-formaat implementatie (FR-20)
+- [x] Opslaan via File System Access API (Chrome/Edge) (FR-18)
+- [x] Opslaan via download-fallback (Firefox/Safari) (FR-18)
+- [x] Openen via bestandskiezer-knop (FR-19)
+- [x] Openen via drag-and-drop op startscherm (FR-19)
+- [x] Afbeeldingen als base64 insluiten in `.kaart` bestand (FR-20) — cliparts opgeslagen inline via Fabric.js JSON; `embeddedAssets` veld aanwezig voor Sprint 4+
 
 ### Recente bestanden
-- [ ] Lijst van recente bestanden opslaan in localStorage (FR-21)
-- [ ] 5 meest recente als grote, klikbare kaartminiaturen tonen op startscherm (FR-21)
+- [x] Lijst van recente bestanden opslaan in localStorage (FR-21)
+- [x] 5 meest recente als grote, klikbare kaartminiaturen tonen op startscherm (FR-21)
 
 ### PDF-export
-- [ ] `js/export.js` — jsPDF 2.x lokaal bundelen en integreren
-- [ ] A4-liggend PDF genereren: voorkant links, binnenkant rechts (FR-22)
-- [ ] Minimaal 150 DPI beeldkwaliteit (FR-24)
-- [ ] Knop "Download PDF" (FR-22)
+- [x] `js/export.js` — jsPDF 2.x lokaal bundelen en integreren
+- [x] A4-liggend PDF genereren: voorkant links, binnenkant rechts (FR-22)
+- [x] Minimaal 150 DPI beeldkwaliteit (FR-24) — 877px per A5-helft = ≥150 DPI
+- [x] Knop "Download PDF" (FR-22)
 
 ### Afdrukken
-- [ ] Knop "Afdrukken" opent browser-printdialoog (FR-23)
-- [ ] `@media print` stijlen: geen UI-chrome, correcte marges (FR-23)
-- [ ] Sneltoets `Ctrl+P` gekoppeld (A-05)
+- [x] Knop "Afdrukken" opent browser-printdialoog (FR-23)
+- [x] `@media print` stijlen: geen UI-chrome, correcte marges (FR-23)
+- [x] Sneltoets `Ctrl+P` gekoppeld (A-05)
 
 ---
 

@@ -280,8 +280,8 @@ var KaartCanvas = (function () {
     };
   }
 
-  function loadState(state) {
-    if (!state || !fabricCanvas) return;
+  function loadState(state, onDone) {
+    if (!state || !fabricCanvas) { if (onDone) onDone(); return; }
     if (state.front)  cardState.front  = state.front;
     if (state.inside) cardState.inside = state.inside;
 
@@ -293,11 +293,13 @@ var KaartCanvas = (function () {
         fabricCanvas.backgroundColor = cardState[currentSide].background;
         fabricCanvas.renderAll();
         if (deselectionCallback) deselectionCallback();
+        if (onDone) onDone();
       });
     } else {
       fabricCanvas.clear();
       fabricCanvas.backgroundColor = cardState[currentSide].background;
       fabricCanvas.renderAll();
+      if (onDone) onDone();
     }
   }
 

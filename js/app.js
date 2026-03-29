@@ -159,8 +159,8 @@
     var key         = e.key.toLowerCase();
 
     /* Ctrl+S en Ctrl+P altijd onderscheppen — anders opent de browser een dialoog */
-    if (key === 's') { e.preventDefault(); announceStatus('Opslaan is beschikbaar in Sprint 3.'); }
-    if (key === 'p') { e.preventDefault(); announceStatus('Afdrukken is beschikbaar in Sprint 3.'); }
+    if (key === 's') { e.preventDefault(); KaartStorage.save(); }
+    if (key === 'p') { e.preventDefault(); KaartExport.print(); }
 
     /* Ctrl+Z en Ctrl+Y NIET onderscheppen in formuliervelden —
        daar verwacht de gebruiker dat de browser de tekst-undo/redo afhandelt. */
@@ -212,6 +212,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     KaartCanvas.init();
     KaartUndo.init();      /* na canvas, vóór toolbar */
+    KaartStorage.init();   /* na canvas+undo: dirty-tracking + beforeunload */
     KaartClipart.init();   /* vóór toolbar zodat open() beschikbaar is */
     KaartToolbar.init();
     KaartProperties.init();
@@ -221,6 +222,7 @@
 
     initTabs();
     initKeyboardShortcuts();
+    KaartStorage.checkPendingOpen(); /* laad kaart uit sessionStorage indien aanwezig */
 
     /* Undo/redo knoppen (aria-disabled wordt dynamisch beheerd door KaartUndo) */
     var btnUndo = document.getElementById('btn-undo');
@@ -247,9 +249,17 @@
 
     var btnSave = document.getElementById('btn-save');
     if (btnSave) {
-      btnSave.addEventListener('click', function () {
-        announceStatus('Opslaan is beschikbaar in Sprint 3.');
-      });
+      btnSave.addEventListener('click', function () { KaartStorage.save(); });
+    }
+
+    var btnPrint = document.getElementById('btn-print');
+    if (btnPrint) {
+      btnPrint.addEventListener('click', function () { KaartExport.print(); });
+    }
+
+    var btnDownload = document.getElementById('btn-download');
+    if (btnDownload) {
+      btnDownload.addEventListener('click', function () { KaartExport.downloadPDF(); });
     }
 
     /* Sync aria-expanded op <details>/<summary> — Firefox + NVDA kondigt
@@ -263,11 +273,11 @@
       });
     });
 
-    /* Toekomstige knoppen: klik toont beschikbaarheidsmelding.
-       Sprint-2-knoppen zijn nu actief en worden uitgesloten van deze handler. */
-    var sprint2Active = ['btn-undo', 'btn-redo', 'btn-add-clipart', 'btn-background', 'btn-save'];
+    /* Toekomstige knoppen (Sprint 4+): klik toont beschikbaarheidsmelding. */
+    var sprint3Active = ['btn-undo', 'btn-redo', 'btn-add-clipart', 'btn-background',
+                         'btn-save', 'btn-print', 'btn-download'];
     document.querySelectorAll('[aria-disabled="true"]').forEach(function (btn) {
-      if (sprint2Active.indexOf(btn.id) !== -1) return;
+      if (sprint3Active.indexOf(btn.id) !== -1) return;
       btn.addEventListener('click', function () {
         var label = btn.getAttribute('aria-label') || '';
         var match = label.match(/beschikbaar in (Sprint \d+)/i);

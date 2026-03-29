@@ -159,6 +159,16 @@ var KaartUndo = (function () {
     previousSnapshot = captureEntry();
   }
 
+  /* reset — wist de volledige undo/redo-geschiedenis. Aanroepen na het laden
+     van een .kaart bestand, zodat de gebruiker niet terug kan undo-en naar
+     de vorige kaart. */
+  function reset() {
+    undoStack        = [];
+    redoStack        = [];
+    previousSnapshot = captureEntry();
+    updateButtons();
+  }
+
   function updateButtons() {
     var btnUndo = document.getElementById('btn-undo');
     var btnRedo = document.getElementById('btn-redo');
@@ -193,6 +203,7 @@ var KaartUndo = (function () {
     record:  record,
     pause:   pause,
     resume:  resume,
+    reset:   reset,
     canUndo: canUndo,
     canRedo: canRedo
   };

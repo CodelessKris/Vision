@@ -33,8 +33,7 @@
       <button type="button"
               id="btn-save"
               class="btn btn-save"
-              aria-disabled="true"
-              aria-label="Kaart opslaan (Ctrl+S) — beschikbaar in Sprint 3">
+              aria-label="Kaart opslaan (Ctrl+S)">
         Opslaan
       </button>
     </header>
@@ -441,23 +440,25 @@
       <button type="button"
               id="btn-print"
               class="btn"
-              aria-disabled="true"
-              aria-label="Afdrukken (Ctrl+P) — beschikbaar in Sprint 3">
+              aria-label="Afdrukken (Ctrl+P)">
         Afdrukken
       </button>
       <button type="button"
               id="btn-download"
               class="btn"
-              aria-disabled="true"
-              aria-label="PDF downloaden — beschikbaar in Sprint 3">
+              aria-label="PDF downloaden">
         Download PDF
       </button>
     </footer>
 
   </div><!-- .editor-layout -->
 
-  <!-- Vendor library — globale 'fabric' namespace -->
+  <!-- Printcontainer: verborgen op scherm, zichtbaar bij @media print -->
+  <div id="print-container" class="print-only" aria-hidden="true"></div>
+
+  <!-- Vendor libraries — globale namespaces 'fabric' en 'jspdf' -->
   <script src="lib/fabric.min.js"></script>
+  <script src="lib/jspdf.min.js"></script>
 
   <!-- Applicatiemodules — volgorde is van belang (IIFE, geen ES modules) -->
   <script src="js/utils.js"></script>
@@ -466,6 +467,8 @@
   <script src="js/clipart.js"></script>
   <script src="js/toolbar.js"></script>
   <script src="js/properties.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/export.js"></script>
   <script src="js/app.js"></script>
 
 </body>

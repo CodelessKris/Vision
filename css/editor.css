@@ -586,3 +586,52 @@ input[type="checkbox"] {
 #btn-duplicate {
   width: 100%;
 }
+
+/* =============================================================================
+   Sprint 3 — Afdrukken
+   ============================================================================= */
+
+/* Printcontainer: verborgen op scherm, zichtbaar bij @media print. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* Verberg alle UI-chrome. */
+  .editor-layout,
+  .editor-header,
+  .editor-toolbar,
+  .editor-footer,
+  .tab-bar,
+  .skip-link,
+  #status-announcer {
+    display: none !important;
+  }
+
+  /* Toon de printcontainer. */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Pagina-opmaak: A4 liggend, beide A5-helften naast elkaar. */
+  .print-page {
+    display: flex;
+    width: 297mm;
+    height: 210mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-side {
+    width: 148.5mm;
+    height: 210mm;
+    object-fit: contain;
+    display: block;
+  }
+
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+}
