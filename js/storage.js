@@ -234,10 +234,16 @@ var KaartStorage = (function () {
       }
     };
 
+    /* Pauzeer elementenlijst tijdens laden — loadFromJSON vuurt anders object:added
+       events die de lijst verdubbelen. rebuild() na de callback herstelt de juiste staat. */
+    if (typeof KaartA11y !== 'undefined') KaartA11y.pause();
+
     KaartCanvas.loadState(state, function () {
       /* Alles wat van de geladen canvas-staat afhangt moet BINNEN de callback
          staan — loadFromJSON is async; buiten de callback is de canvas nog leeg. */
       KaartUndo.reset();
+      /* Herbouw elementenlijst — alleen op de editor-pagina (a11y.js geladen) */
+      if (typeof KaartA11y !== 'undefined') { KaartA11y.resume(); KaartA11y.rebuild(); }
 
       createdAt = data.created || nowISO();
       isDirty   = false;

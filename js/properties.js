@@ -148,6 +148,11 @@ var KaartProperties = (function () {
     activeObj.set(prop, value);
     activeObj.setCoords();
     KaartCanvas.getCanvas().renderAll();
+    /* Werk elementenlijst meteen bij — debouncedFireModified wacht 250ms (voor undo),
+       maar de beschrijving in de lijst moet direct kloppen (A-08).
+       Geef activeObj expliciet mee: canvas.getActiveObject() kan null zijn als Fabric
+       intern de selectie wist (bijv. bij focus naar <select>-dropdown). */
+    if (typeof KaartA11y !== 'undefined') KaartA11y.updateObject(activeObj);
     debouncedFireModified();
   }
 
@@ -181,10 +186,23 @@ var KaartProperties = (function () {
   /* --- Events koppelen ---------------------------------------------------- */
 
   function bindEvents() {
-    /* Font */
+    /* Font
+       De browser laadt @font-face fonts pas als een DOM-element ze gebruikt.
+       Omdat Fabric.js op een <canvas> tekent (geen DOM), moeten we het gekozen
+       font eerst via de Font Loading API laden voordat Fabric renderAll() aanroept.
+       Zonder dit valt de browser terug op het standaardfont. */
     var fontEl = document.getElementById('prop-font');
     if (fontEl) {
-      fontEl.addEventListener('change', function () { applyProperty('fontFamily', this.value); });
+      fontEl.addEventListener('change', function () {
+        var family = this.value;
+        if (document.fonts && document.fonts.load) {
+          document.fonts.load('400 40px "' + family + '"').then(function () {
+            applyProperty('fontFamily', family);
+          });
+        } else {
+          applyProperty('fontFamily', family);
+        }
+      });
     }
 
     /* Lettergrootte */
@@ -333,6 +351,7 @@ var KaartProperties = (function () {
       activeObj.setCoords();
       var canvas = KaartCanvas.getCanvas();
       canvas.renderAll();
+      if (typeof KaartA11y !== 'undefined') KaartA11y.updateObject(activeObj);
       debouncedFireModified();
     }
 

@@ -113,7 +113,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('../assets/fonts/Pacifico-Regular.woff2') format('woff2');
+  src: url('../assets/fonts/Pacifico-v23.woff2') format('woff2');
 }
 
 @font-face {
@@ -209,6 +209,41 @@
   --radius-sm:            4px;
   --transition-speed:     0.15s;
   --border-width:         2px;
+}
+
+/* --- Licht thema (A-19) ---
+   Overschrijft alleen de kleur-tokens. Alle andere variabelen erven van :root.
+   Contrast-doelen: tekst ≥ 7:1, UI-componenten ≥ 4.5:1, focus ≥ 3:1. */
+html[data-theme="light"] {
+  /* Achtergronden — gebroken wit, geen puur wit (vermindert glare voor glaucoom) */
+  --color-bg-primary:       #f0f0f4; /* ~12.5:1 op tekst-primary ✓ AAA             */
+  --color-bg-secondary:     #e2e2ea;
+  --color-bg-surface:       #c8c8d8;
+  --color-bg-surface-hover: #b0b0c4;
+  --color-bg-disabled:      #d4d4de;
+
+  /* Tekst — WCAG AAA (7:1 minimum op bg-primary) */
+  --color-text-primary:     #1a1a2e; /* ~12.5:1 op bg-primary ✓ AAA                */
+  --color-text-secondary:   #2e2e4a; /* ~10.2:1 op bg-primary ✓ AAA                */
+  --color-text-disabled:    #5a5a78; /* ~4.8:1 op bg-disabled ✓                    */
+
+  /* Interactieve elementen — 4.5:1 minimum (WCAG AA voor UI) */
+  --color-accent:           #1d4ed8; /* ~5.8:1 op bg-primary ✓ UI (niet bodytekst) */
+  --color-accent-hover:     #1e40af;
+  --color-danger:           #b91c1c; /* ~6.1:1 op bg-primary ✓                     */
+  --color-danger-hover:     #991b1b;
+  --color-success:          #15803d; /* ~5.2:1 op bg-primary ✓                     */
+
+  /* Focus-indicator — 3:1 minimum (WCAG 2.2) */
+  --color-focus:            #b45309; /* amber/bruin, ~5.2:1 op bg-primary ✓        */
+}
+
+/* Licht thema: knoppen met gekleurde achtergrond (btn-primary) krijgen witte tekst */
+html[data-theme="light"] .btn-primary {
+  color: #ffffff;
+}
+html[data-theme="light"] .btn-toggle[aria-pressed="true"] {
+  color: #ffffff;
 }
 
 /* --- Minimale CSS reset --- */

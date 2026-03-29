@@ -57,6 +57,15 @@ var KaartCanvas = (function () {
       borderScaleFactor:  3,
       padding:            8
     });
+
+    /* kaartLabel — bewaarbare naam voor clipart-objecten (Sprint 4 / A-08).
+       Overschrijft toObject zodat het veld in .kaart JSON wordt opgeslagen. */
+    var _origToObject = fabric.Object.prototype.toObject;
+    fabric.Object.prototype.toObject = function (propertiesToInclude) {
+      var obj = _origToObject.call(this, propertiesToInclude);
+      obj.kaartLabel = this.kaartLabel || '';
+      return obj;
+    };
   }
 
   function init() {
@@ -242,8 +251,10 @@ var KaartCanvas = (function () {
     fabricCanvas.renderAll();
   }
 
-  /* addImage — laad een SVG-string via Fabric.js en voeg toe aan het canvas (Sprint 2). */
-  function addImage(svgString, callback) {
+  /* addImage — laad een SVG-string via Fabric.js en voeg toe aan het canvas (Sprint 2).
+     options.kaartLabel wordt vóór fabricCanvas.add() gezet zodat object:added handlers
+     (zoals KaartA11y.onObjectAdded) al de correcte naam kunnen lezen. */
+  function addImage(svgString, callback, options) {
     if (!fabricCanvas) return;
     fabric.loadSVGFromString(svgString, function (objects, opts) {
       var group = fabric.util.groupSVGElements(objects, opts);
@@ -259,6 +270,7 @@ var KaartCanvas = (function () {
         scaleX:  scale,
         scaleY:  scale
       });
+      if (options && options.kaartLabel) group.kaartLabel = options.kaartLabel;
       fabricCanvas.add(group);
       fabricCanvas.setActiveObject(group);
       fabricCanvas.renderAll();
@@ -303,6 +315,21 @@ var KaartCanvas = (function () {
     }
   }
 
+  /* bringForward / sendBackwards — z-volgorde voor de elementenlijst (Sprint 4 / A-08). */
+  function bringForward(obj) {
+    if (!fabricCanvas || !obj) return;
+    fabricCanvas.bringForward(obj);
+    fabricCanvas.renderAll();
+    fabricCanvas.fire('object:modified', { target: obj });
+  }
+
+  function sendBackwards(obj) {
+    if (!fabricCanvas || !obj) return;
+    fabricCanvas.sendBackwards(obj);
+    fabricCanvas.renderAll();
+    fabricCanvas.fire('object:modified', { target: obj });
+  }
+
   return {
     init:               init,
     addText:            addText,
@@ -312,6 +339,8 @@ var KaartCanvas = (function () {
     getActiveObject:    function () { return fabricCanvas ? fabricCanvas.getActiveObject() : null; },
     removeActiveObject: removeActiveObject,
     moveActiveObject:   moveActiveObject,
+    bringForward:       bringForward,
+    sendBackwards:      sendBackwards,
     getCanvas:          function () { return fabricCanvas; },
     snapshotCurrentSide: snapshotCurrentSide,
     setCurrentSide:     setCurrentSide,

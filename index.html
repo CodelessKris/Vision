@@ -137,13 +137,19 @@
   <a href="#main-content" class="skip-link">Ga naar hoofdinhoud</a>
 
   <!-- Statusmeldingen voor screenreaders (A-09) -->
-  <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="status-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <div class="start-layout">
 
     <header class="start-header" role="banner">
       <h1>Kaarteditor</h1>
-      <!-- Dark/light mode schakelaar: Sprint 4 -->
+      <button type="button"
+              id="btn-theme-toggle"
+              class="btn btn-toggle"
+              aria-pressed="false"
+              aria-label="Wissel naar licht thema">
+        Licht thema
+      </button>
     </header>
 
     <main class="start-main" id="main-content">
@@ -178,6 +184,9 @@
   <script src="js/utils.js"></script>
   <script src="js/storage.js"></script>
   <script>
+    /* Thema-schakelaar initialiseren (A-19) */
+    initThemeToggle();
+
     /* Recente kaarten tonen bij laden van de pagina. */
     KaartStorage.loadRecent();
 

@@ -72,6 +72,9 @@ var KaartUndo = (function () {
     var activeSide = KaartCanvas.getCurrentSide();
 
     function doLoad() {
+      /* Pauzeer elementenlijst — loadFromJSON vuurt object:added per object,
+         rebuild() na afloop herstelt de correcte staat. */
+      if (typeof KaartA11y !== 'undefined') KaartA11y.pause();
       canvas.loadFromJSON(entry.json, function () {
         canvas.backgroundColor = entry.background;
         canvas.renderAll();
@@ -80,6 +83,7 @@ var KaartUndo = (function () {
         /* Sync previousSnapshot zodat de volgende actie de juiste baseline heeft. */
         previousSnapshot = captureEntry();
         updateButtons();
+        if (typeof KaartA11y !== 'undefined') { KaartA11y.resume(); KaartA11y.rebuild(); }
         if (onDone) onDone();
       });
     }

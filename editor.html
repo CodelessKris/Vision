@@ -14,7 +14,7 @@
   <a href="#canvas-container" class="skip-link">Ga naar editor</a>
 
   <!-- Statusmeldingen voor screenreaders (A-09) -->
-  <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="status-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <div class="editor-layout">
 
@@ -29,6 +29,14 @@
       </a>
 
       <h1 id="card-title">Nieuwe kaart</h1>
+
+      <button type="button"
+              id="btn-theme-toggle"
+              class="btn btn-toggle"
+              aria-pressed="false"
+              aria-label="Wissel naar licht thema">
+        Licht thema
+      </button>
 
       <button type="button"
               id="btn-save"
@@ -422,14 +430,15 @@
 
       </section><!-- .properties-panel -->
 
-      <!-- Tekst-gebaseerde elementenlijst (A-08) — primaire interface voor screenreadergebruikers.
-           Gevuld door Sprint 4 (a11y.js). Verborgen voor ziende gebruikers via sr-only. -->
-      <ul id="element-list"
-          class="sr-only"
-          aria-label="Elementen op de kaart"
-          tabindex="-1">
-        <!-- Sprint 4: elk element krijgt een <li> met beschrijving en bewerkingsknoppen -->
-      </ul>
+      <!-- Tekst-gebaseerde elementenlijst (A-08) — zichtbare alternatieve interface
+           naast het visuele canvas. Gevuld door a11y.js (hidden tot init klaar is). -->
+      <section id="element-list-panel" class="element-list-panel" aria-label="Elementen op de kaart" hidden>
+        <h2>Elementen</h2>
+        <p id="element-list-empty" class="element-list-empty">
+          Geen elementen op deze zijde.
+        </p>
+        <ol id="element-list" aria-label="Elementenlijst"></ol>
+      </section>
 
     </div><!-- .editor-center -->
 
@@ -469,6 +478,7 @@
   <script src="js/properties.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/export.js"></script>
+  <script src="js/a11y.js"></script>
   <script src="js/app.js"></script>
 
 </body>

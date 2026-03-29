@@ -83,12 +83,17 @@
       panel.hidden = panel.getAttribute('aria-labelledby') !== tabId;
     });
 
-    /* Pauzeer undo-opname tijdens wisselen — loadFromJSON in switchSide vuurt
-       anders object:added events die onterecht als undo-stap worden opgeslagen.
+    /* Pauzeer undo-opname en elementenlijst tijdens wisselen — loadFromJSON vuurt
+       anders object:added events die onterecht worden verwerkt.
        resume() wordt aangeroepen vanuit de switchSide-callback zodra loadFromJSON
        klaar is — niet via een vaste timeout die te vroeg kan vuren. */
     KaartUndo.pause();
-    KaartCanvas.switchSide(side, KaartUndo.resume);
+    KaartA11y.pause();
+    KaartCanvas.switchSide(side, function () {
+      KaartUndo.resume();
+      KaartA11y.resume();
+      KaartA11y.rebuild();
+    });
 
     announceStatus(side === 'front' ? 'Voorkant actief' : 'Binnenkant actief');
 
@@ -210,15 +215,28 @@
      ============================================================ */
 
   document.addEventListener('DOMContentLoaded', function () {
+    /* Preload alle kaartfonts — browser laadt @font-face pas bij DOM-gebruik,
+       maar Fabric tekent op <canvas> (geen DOM). Zonder preload valt Fabric
+       terug op het standaardfont totdat het font toevallig al geladen is. */
+    if (document.fonts && document.fonts.load) {
+      ['Pacifico', 'Caveat', 'Lobster', 'Dancing Script',
+       'Permanent Marker', 'Patrick Hand', 'Satisfy'].forEach(function (family) {
+        document.fonts.load('400 40px "' + family + '"');
+      });
+    }
+
     KaartCanvas.init();
     KaartUndo.init();      /* na canvas, vóór toolbar */
     KaartStorage.init();   /* na canvas+undo: dirty-tracking + beforeunload */
     KaartClipart.init();   /* vóór toolbar zodat open() beschikbaar is */
     KaartToolbar.init();
     KaartProperties.init();
+    KaartA11y.init();      /* na canvas: koppelt canvas-events, bouwt elementenlijst */
 
     KaartCanvas.onSelectionChange(function (obj) { KaartProperties.show(obj); });
     KaartCanvas.onSelectionCleared(function ()    { KaartProperties.hide();   });
+
+    initThemeToggle();     /* thema-schakelaar (A-19) */
 
     initTabs();
     initKeyboardShortcuts();

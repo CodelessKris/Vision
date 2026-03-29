@@ -148,41 +148,45 @@ Requirements: [PRD-kaarteditor.md](PRD-kaarteditor.md) | Architectuur: [CLAUDE.m
 ## Sprint 4 — Toegankelijkheid & afwerking
 
 ### Volledige ARIA-implementatie
-- [ ] `js/a11y.js` — `aria-live="polite"` regio voor statusmeldingen (A-09)
-- [ ] Statusmeldingen: opgeslagen, fout, element toegevoegd/verwijderd (A-09)
-- [ ] Kleur nooit als enige onderscheidende factor (A-18)
+- [x] `js/a11y.js` — module aangemaakt met elementenlijst-logica (A-08, A-09)
+- [x] `role="status"` toegevoegd aan `#status-announcer` op beide pagina's (A-09)
+- [x] Selectie-aankondigingen via `announceStatus` bij canvas-objectselectie (A-09)
+- [x] Kleur nooit als enige onderscheidende factor — elementenlijst gebruikt border + achtergrond (A-18)
 
 ### Tekst-gebaseerde elementenlijst (A-08)
-- [ ] Alternatieve lijst van canvaselementen naast de visuele editor (A-08)
-- [ ] Formaat: "Tekst: Gefeliciteerd, Midden, 48pt, Rood" (A-08)
-- [ ] Via toetsenbord te selecteren en te bewerken (A-08)
-- [ ] Synchroniseert met visuele canvas-staat (A-08)
+- [x] Zichtbare sectie `.element-list-panel` naast de visuele editor (A-08)
+- [x] Formaat: "Tekst: «Gefeliciteerd», Midden, 48pt, #FF3366" of "Clipart: Ballon, 120%" (A-08)
+- [x] Via toetsenbord te selecteren (selecteert canvas-object) + bewerkingsknoppen (A-08)
+- [x] Synchroniseert bidirectioneel: object:added/removed/modified/selection events (A-08)
+- [x] Z-volgorde knoppen (Omhoog/Omlaag) per element (A-08)
+- [x] `kaartLabel` op clipart-objecten — overleeft .kaart sla/laad roundtrip (A-08)
 
 ### Zoom & reflow
-- [ ] Testen bij 100%–200% browserzoom (A-22, A-27)
-- [ ] Enkelvoudige kolom bij 200% zoom (A-27)
-- [ ] Geen horizontale scrollbalk bij 200% (A-22)
-- [ ] Geen overlappende elementen bij 200% (A-27)
-- [ ] `user-scalable=no` NIET aanwezig in viewport meta (A-28)
+- [x] Enkelvoudige kolom bij 200% zoom — 768px breakpoint dekt 640px effectieve breedte (A-27)
+- [x] `overflow-x: hidden` op body voorkomt horizontale scrollbalk (A-22)
+- [x] Toolbar-knoppen: `min-width: auto` zodat ze niet buiten beeld lopen (A-27)
+- [x] `user-scalable=no` NIET aanwezig in viewport meta (A-28) — was al correct
+- [x] Handmatig testen bij 100%–200% browserzoom (A-22, A-27)
 
 ### Dark/light mode schakelaar
-- [ ] Prominente schakelaar op beide schermen (A-19)
-- [ ] Voorkeur opslaan in localStorage
-- [ ] Beide modi voldoen aan contrastvereisten (A-15, A-16)
+- [x] Prominente `#btn-theme-toggle` knop op beide schermen (A-19)
+- [x] Voorkeur opslaan in localStorage (`kaarteditor-theme`)
+- [x] `prefers-color-scheme` gerespecteerd als fallback (A-19)
+- [x] Licht thema: alle kleur-tokens gedefinieerd met AAA contrastratio's (A-15, A-16)
 
 ### Cross-browser
-- [ ] Chrome — volledige functionaliteit (T-03)
+- [x] Chrome — volledige functionaliteit (T-03)
 - [ ] Edge — volledige functionaliteit (T-03)
 - [ ] Firefox — File System Access fallback werkt (T-03)
 - [ ] Safari — File System Access fallback werkt (T-03)
 
 ### Performance
-- [ ] Paginalaadtijd onder 3 seconden (T-04)
-- [ ] Geen externe API-calls tijdens gebruik (T-05)
-- [ ] Alle assets lokaal gebundeld (T-02)
+- [x] Paginalaadtijd onder 3 seconden (T-04)
+- [x] Geen externe API-calls tijdens gebruik (T-05)
+- [x] Alle assets lokaal gebundeld (T-02)
 
 ### Gebruikerstest
-- [ ] Volledige keyboard-only workflow: maken, opslaan, laden, afdrukken (PRD §9)
+- [x] Volledige keyboard-only workflow: maken, opslaan, laden, afdrukken (PRD §9)
 - [ ] Screenreadertest: NVDA + Chrome (PRD §9)
 - [ ] Screenreadertest: VoiceOver + Safari (PRD §9)
 - [ ] Contrastcheck op alle UI-elementen (PRD §9)

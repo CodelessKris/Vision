@@ -61,3 +61,72 @@ function announceStatus(message) {
     announcer.textContent = message;
   }, 100);
 }
+
+/* --- Thema-schakelaar (A-19) ---
+   Gebruikt door zowel index.html als editor.html.
+   Slaat voorkeur op in localStorage. Respecteert prefers-color-scheme als
+   er geen opgeslagen voorkeur is. */
+
+var THEME_KEY = 'kaarteditor-theme';
+var _themeInitialized = false;
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  /* Werk alle schakelaar-knoppen op de pagina bij */
+  document.querySelectorAll('#btn-theme-toggle').forEach(function (btn) {
+    if (theme === 'light') {
+      btn.textContent = 'Donker thema';
+      btn.setAttribute('aria-label', 'Wissel naar donker thema');
+      btn.setAttribute('aria-pressed', 'true');
+    } else {
+      btn.textContent = 'Licht thema';
+      btn.setAttribute('aria-label', 'Wissel naar licht thema');
+      btn.setAttribute('aria-pressed', 'false');
+    }
+  });
+}
+
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme');
+  var next = (current === 'light') ? 'dark' : 'light';
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  announceStatus(next === 'light' ? 'Licht thema geactiveerd' : 'Donker thema geactiveerd');
+}
+
+function initThemeToggle() {
+  if (_themeInitialized) return;
+  _themeInitialized = true;
+
+  /* Bepaal beginwaarde: localStorage → prefers-color-scheme → dark (standaard) */
+  var stored = null;
+  try { stored = localStorage.getItem(THEME_KEY); } catch (e) {}
+
+  var theme;
+  if (stored === 'light' || stored === 'dark') {
+    theme = stored;
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    theme = 'light';
+  } else {
+    theme = 'dark';
+  }
+  applyTheme(theme);
+
+  /* Bind knoppen */
+  document.querySelectorAll('#btn-theme-toggle').forEach(function (btn) {
+    btn.addEventListener('click', toggleTheme);
+  });
+
+  /* Volg OS-voorkeur als er geen opgeslagen voorkeur is */
+  if (!stored && window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function (e) {
+      var hasPref = null;
+      try { hasPref = localStorage.getItem(THEME_KEY); } catch (ex) {}
+      if (!hasPref) applyTheme(e.matches ? 'light' : 'dark');
+    });
+  }
+}

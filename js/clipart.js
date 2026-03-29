@@ -408,7 +408,7 @@ var KaartClipart = (function () {
     KaartCanvas.addImage(item.svg, function () {
       announceStatus('Clipart \u201c' + item.label + '\u201d toegevoegd');
       close();
-    });
+    }, { kaartLabel: item.label });
   }
 
   /* --- Open / sluit ------------------------------------------------------- */
