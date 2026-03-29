@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Playwright test-artefacten
+.playwright-mcp/
+test-*.png
+sprint1-*.png
+
+# Claude Code lokale instellingen
+.claude/settings.local.json

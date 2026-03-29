@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <!-- Geen user-scalable=no — pinch-to-zoom toegestaan (A-28) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor — Kaarteditor</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+
+  <!-- Skip-link: eerste DOM-element (A-06) -->
+  <a href="#canvas-container" class="skip-link">Ga naar editor</a>
+
+  <!-- Statusmeldingen voor screenreaders (A-09) -->
+  <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="editor-layout">
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <header class="editor-header" role="banner">
+      <a href="index.html"
+         class="btn btn-back"
+         aria-label="Terug naar startscherm">
+        &#8592; Terug
+      </a>
+
+      <h1 id="card-title">Nieuwe kaart</h1>
+
+      <button type="button"
+              id="btn-save"
+              class="btn btn-save"
+              aria-label="Kaart opslaan (Ctrl+S) — beschikbaar in Sprint 3">
+        Opslaan
+      </button>
+    </header>
+
+    <!-- ============================================================
+         WERKBALK (linker sidebar)
+         ============================================================ -->
+    <nav class="editor-toolbar" aria-label="Werkbalk">
+
+      <button type="button"
+              id="btn-add-text"
+              class="btn"
+              aria-label="Tekstelement toevoegen (sneltoets: T)">
+        + Tekst
+      </button>
+
+      <!-- aria-disabled zonder native disabled: blijft in tabvolgorde zodat toetsenbordgebruikers
+           de knop kunnen ontdekken; klik-handler in app.js kondigt beschikbaarheid aan. -->
+      <button type="button"
+              id="btn-add-clipart"
+              class="btn"
+              aria-disabled="true"
+              aria-label="Clipart toevoegen (beschikbaar in Sprint 2)">
+        + Clipart
+      </button>
+
+      <button type="button"
+              id="btn-background"
+              class="btn"
+              aria-disabled="true"
+              aria-label="Achtergrondkleur instellen (beschikbaar in Sprint 2)">
+        Achtergrond
+      </button>
+
+      <hr class="divider" aria-hidden="true">
+
+      <button type="button"
+              id="btn-undo"
+              class="btn"
+              aria-disabled="true"
+              aria-label="Ongedaan maken (Ctrl+Z) — beschikbaar in Sprint 2">
+        &#8617; Ongedaan
+      </button>
+
+      <button type="button"
+              id="btn-redo"
+              class="btn"
+              aria-disabled="true"
+              aria-label="Opnieuw uitvoeren (Ctrl+Y) — beschikbaar in Sprint 2">
+        &#8618; Opnieuw
+      </button>
+
+    </nav>
+
+    <!-- ============================================================
+         CENTRAAL GEBIED: tabs + canvas + eigenschappenpaneel
+         ============================================================ -->
+    <div class="editor-center">
+
+      <!-- ARIA Tabs: Voorkant / Binnenkant (A-11, FR-01)
+           Patroon: WAI-ARIA Tabs (manual activation)
+           https://www.w3.org/WAI/ARIA/apg/patterns/tabs/
+      -->
+      <div class="tab-bar" role="tablist" aria-label="Kaartzijde">
+
+        <button role="tab"
+                id="tab-front"
+                aria-selected="true"
+                aria-controls="panel-front"
+                tabindex="0">
+          Voorkant
+        </button>
+
+        <button role="tab"
+                id="tab-inside"
+                aria-selected="false"
+                aria-controls="panel-inside"
+                tabindex="-1">
+          Binnenkant
+        </button>
+
+      </div>
+
+      <!-- Tabpanel: Voorkant -->
+      <div role="tabpanel"
+           id="panel-front"
+           aria-labelledby="tab-front"
+           tabindex="0">
+
+        <!-- tabindex="-1": maakt dit element focusbaar als skip-link-doel (A-06) -->
+        <div class="canvas-container" id="canvas-container" tabindex="-1">
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <!-- aria-label beschrijft de kaart; de tekst-gebaseerde elementenlijst
+                 (#element-list) is het primaire toegankelijke interface voor screenreaders (A-08) -->
+            <canvas id="fabric-canvas"
+                    aria-label="Kaartcanvas — gebruik de werkbalk of sneltoetsen om elementen toe te voegen"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tabpanel: Binnenkant (verborgen bij start) -->
+      <!-- canvas-container wordt via JS verplaatst bij tabwisseling -->
+      <div role="tabpanel"
+           id="panel-inside"
+           aria-labelledby="tab-inside"
+           tabindex="0"
+           hidden>
+      </div>
+
+      <!-- ====================================================
+           EIGENSCHAPPENPANEEL
+           Zichtbaar wanneer een element geselecteerd is.
+           Alle velden hebben een <label> (A-10).
+           Kleurpickers hebben ook hex-invoer (A-13).
+           ==================================================== -->
+      <!-- tabindex="-1": maakt het panel focusbaar voor programmatische focus (A-08) -->
+      <section class="properties-panel"
+               id="properties-panel"
+               aria-label="Eigenschappen van geselecteerd element"
+               tabindex="-1"
+               hidden>
+
+        <h2>Eigenschappen</h2>
+
+        <div class="properties-grid">
+
+          <!-- Font selector met live preview (FR-11, FR-13) -->
+          <div class="prop-group">
+            <label for="prop-font">Lettertype</label>
+            <select id="prop-font">
+              <option value="Atkinson Hyperlegible" style="font-family: 'Atkinson Hyperlegible'">Atkinson Hyperlegible</option>
+              <!-- Extra fonts worden toegevoegd in latere sprints -->
+            </select>
+          </div>
+
+          <!-- Lettergrootte: slider + numerieke invoer (FR-11) -->
+          <div class="prop-group">
+            <label for="prop-size">Lettergrootte (pt)</label>
+            <div class="form-row">
+              <input type="range"
+                     id="prop-size-slider"
+                     min="12"
+                     max="120"
+                     value="36"
+                     aria-label="Lettergrootte slider">
+              <input type="number"
+                     id="prop-size"
+                     min="12"
+                     max="120"
+                     value="36"
+                     aria-label="Lettergrootte numerieke waarde">
+            </div>
+          </div>
+
+          <!-- Tekstkleur: kleurpicker + hex-invoer (FR-11, A-13) -->
+          <div class="prop-group">
+            <label>Tekstkleur</label>
+            <div class="color-row">
+              <input type="color"
+                     id="prop-color"
+                     value="#333333"
+                     aria-label="Tekstkleur kiezen met kleurpicker">
+              <input type="text"
+                     id="prop-color-hex"
+                     value="#333333"
+                     maxlength="7"
+                     pattern="^#[0-9A-Fa-f]{6}$"
+                     aria-label="Tekstkleur als hex-waarde (bijvoorbeeld #333333)"
+                     placeholder="#333333">
+            </div>
+          </div>
+
+          <!-- Uitlijning (FR-11) -->
+          <div class="prop-group">
+            <div role="group" aria-labelledby="label-uitlijning">
+              <span id="label-uitlijning" class="prop-group-label">Uitlijning</span>
+              <div class="alignment-group">
+                <button type="button"
+                        id="prop-align-left"
+                        class="btn btn-toggle"
+                        aria-label="Links uitlijnen"
+                        aria-pressed="false">
+                  Links
+                </button>
+                <button type="button"
+                        id="prop-align-center"
+                        class="btn btn-toggle"
+                        aria-label="Centreren"
+                        aria-pressed="true">
+                  Midden
+                </button>
+                <button type="button"
+                        id="prop-align-right"
+                        class="btn btn-toggle"
+                        aria-label="Rechts uitlijnen"
+                        aria-pressed="false">
+                  Rechts
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opmaak: vet en cursief (FR-11) -->
+          <div class="prop-group">
+            <div role="group" aria-labelledby="label-opmaak">
+              <span id="label-opmaak" class="prop-group-label">Opmaak</span>
+              <div class="format-group">
+                <button type="button"
+                        id="prop-bold"
+                        class="btn btn-toggle"
+                        aria-label="Vetgedrukt"
+                        aria-pressed="false">
+                  <strong>V</strong>
+                </button>
+                <button type="button"
+                        id="prop-italic"
+                        class="btn btn-toggle"
+                        aria-label="Cursief"
+                        aria-pressed="false">
+                  <em>C</em>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- .properties-grid -->
+
+      </section><!-- .properties-panel -->
+
+      <!-- Tekst-gebaseerde elementenlijst (A-08) — primaire interface voor screenreadergebruikers.
+           Gevuld door Sprint 4 (a11y.js). Verborgen voor ziende gebruikers via sr-only. -->
+      <ul id="element-list"
+          class="sr-only"
+          aria-label="Elementen op de kaart"
+          tabindex="-1">
+        <!-- Sprint 4: elk element krijgt een <li> met beschrijving en bewerkingsknoppen -->
+      </ul>
+
+    </div><!-- .editor-center -->
+
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <footer class="editor-footer">
+      <button type="button"
+              id="btn-print"
+              class="btn"
+              aria-disabled="true"
+              aria-label="Afdrukken (Ctrl+P) — beschikbaar in Sprint 3">
+        Afdrukken
+      </button>
+      <button type="button"
+              id="btn-download"
+              class="btn"
+              aria-disabled="true"
+              aria-label="PDF downloaden — beschikbaar in Sprint 3">
+        Download PDF
+      </button>
+    </footer>
+
+  </div><!-- .editor-layout -->
+
+  <!-- Vendor library — globale 'fabric' namespace -->
+  <script src="lib/fabric.min.js"></script>
+
+  <!-- Applicatiemodules — volgorde is van belang (IIFE, geen ES modules) -->
+  <script src="js/utils.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/toolbar.js"></script>
+  <script src="js/properties.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

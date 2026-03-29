@@ -1,0 +1,305 @@
+/* =============================================================================
+   editor.css — Editor-scherm layout, werkbalk, canvas, eigenschappenpaneel
+   Kaarteditor | Sprint 1
+   ============================================================================= */
+
+/* --- Hoofd-layout: CSS Grid --- */
+.editor-layout {
+  display: grid;
+  grid-template-areas:
+    "header  header"
+    "toolbar center"
+    "footer  footer";
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+
+  /* Compact, gecentreerde werkzone (A-26) */
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* --- Header --- */
+.editor-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background-color: var(--color-bg-secondary);
+  border-bottom: var(--border-width) solid var(--color-bg-surface);
+}
+
+.editor-header h1 {
+  flex: 1;
+  font-size: var(--font-size-h2);
+  color: var(--color-text-primary);
+  /* Verhinder overflow bij lange titels */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editor-header .btn-back {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.editor-header .btn-save {
+  white-space: nowrap;
+}
+
+/* --- Werkbalk (linker sidebar) --- */
+.editor-toolbar {
+  grid-area: toolbar;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 12px;
+  background-color: var(--color-bg-secondary);
+  border-right: var(--border-width) solid var(--color-bg-surface);
+  overflow-y: auto;
+}
+
+.editor-toolbar button {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 12px 14px;
+  font-size: var(--font-size-label);
+}
+
+/* Scheidingslijn in werkbalk */
+.editor-toolbar .divider {
+  margin: 8px 0;
+  border-color: var(--color-bg-surface);
+}
+
+/* --- Centraal gebied (tabs + canvas + properties) --- */
+.editor-center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* --- ARIA Tabs: Voorkant / Binnenkant (A-11) --- */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: var(--border-width) solid var(--color-bg-surface);
+  flex-shrink: 0;
+}
+
+.tab-bar [role="tab"] {
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: none;
+  border-color: transparent;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  margin-bottom: -2px; /* overlap met border */
+  min-width: 140px;
+  font-size: var(--font-size-label);
+}
+
+.tab-bar [role="tab"][aria-selected="true"] {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border-color: var(--color-bg-surface);
+  border-bottom-color: var(--color-bg-primary); /* verbindt met tabpanel */
+  font-weight: 700;
+}
+
+/* Zorg dat de focus-ring niet achter de tab-balk border verdwijnt */
+.tab-bar [role="tab"]:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+
+.tab-bar [role="tab"]:hover:not([aria-selected="true"]) {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+/* --- Canvas container --- */
+.canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-shrink: 0;
+  /* Sticky zodat de kaart zichtbaar blijft terwijl het eigenschappenpaneel scrollt (A-26) */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-bg-primary);
+}
+
+[role="tabpanel"] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[role="tabpanel"][hidden] {
+  display: none;
+}
+
+/* De Fabric.js canvas element */
+#fabric-canvas {
+  display: block;
+  /* Grootte wordt gezet via JavaScript (canvas.js) */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Canvas wrapper — zichtbare A5-kaart op de achtergrond */
+.canvas-wrapper {
+  position: relative;
+  background-color: var(--color-canvas-bg);
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.6);
+  z-index: 1; /* Sprint 2: basis voor overlay-stapeling (clipart-panel etc.) */
+}
+
+/* --- Eigenschappenpaneel (onder de canvas) --- */
+.properties-panel {
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-bg-surface);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.properties-panel h2 {
+  font-size: var(--font-size-h2);
+  margin-bottom: 20px;
+  color: var(--color-text-primary);
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px 24px;
+}
+
+.prop-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0; /* voorkom overflow uit grid-cel */
+}
+
+.prop-group label {
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0;
+}
+
+/* Label voor role="group" blokken (vervangt fieldset/legend) */
+.prop-group-label {
+  display: block;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+/* Font-selector met preview */
+#prop-font {
+  font-size: var(--font-size-label);
+  min-height: var(--target-min);
+}
+
+/* Uitlijning knoppen — rij van 3 */
+.alignment-group {
+  display: flex;
+  gap: 6px;
+}
+
+.alignment-group button {
+  flex: 1;
+  min-width: 56px;
+  font-size: var(--font-size-label);
+}
+
+/* Opmaak knoppen (vet/cursief) */
+.format-group {
+  display: flex;
+  gap: 6px;
+}
+
+.format-group button {
+  min-width: 56px;
+  font-size: var(--font-size-body);
+}
+
+#prop-bold {
+  font-weight: 700;
+}
+
+#prop-italic {
+  font-style: italic;
+}
+
+/* --- Footer --- */
+.editor-footer {
+  grid-area: footer;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  background-color: var(--color-bg-secondary);
+  border-top: var(--border-width) solid var(--color-bg-surface);
+  flex-wrap: wrap;
+}
+
+/* --- Responsief: 200% zoom / smalle vensters (A-22, A-27) --- */
+@media (max-width: 768px) {
+  .editor-layout {
+    grid-template-areas:
+      "header"
+      "toolbar"
+      "center"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  .editor-toolbar {
+    border-right: none;
+    border-bottom: var(--border-width) solid var(--color-bg-surface);
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .editor-toolbar button {
+    width: auto;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .editor-toolbar .divider {
+    display: none;
+  }
+
+  .properties-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-footer {
+    justify-content: stretch;
+  }
+
+  .editor-footer button {
+    flex: 1;
+  }
+}
+
+/* Nog smaller (bijv. telefoon of 200% zoom op klein scherm) */
+@media (max-width: 480px) {
+  .tab-bar [role="tab"] {
+    min-width: 100px;
+    flex: 1;
+  }
+}

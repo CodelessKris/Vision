@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <!-- Geen user-scalable=no — pinch-to-zoom toegestaan (A-28) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaarteditor</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    /* Start-scherm specifieke stijlen */
+    .start-layout {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .start-header {
+      background-color: var(--color-bg-secondary);
+      border-bottom: var(--border-width) solid var(--color-bg-surface);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .start-header h1 {
+      font-size: var(--font-size-h1);
+      color: var(--color-text-primary);
+    }
+
+    .start-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .start-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 56px;
+      width: 100%;
+    }
+
+    .start-actions a.btn-primary,
+    .start-actions button {
+      flex: 1;
+      min-width: 240px;
+      max-width: 320px;
+    }
+
+    .recent-section {
+      width: 100%;
+    }
+
+    .recent-section h2 {
+      margin-bottom: 20px;
+      color: var(--color-text-primary);
+    }
+
+    .recent-empty {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-body);
+      padding: 24px;
+      background-color: var(--color-bg-secondary);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    /* Recente kaarten grid (Sprint 3 — placeholder stijlen alvast klaar) */
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .recent-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      background-color: var(--color-bg-secondary);
+      border: var(--border-width) solid var(--color-bg-surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+      min-height: var(--target-min);
+      text-decoration: none;
+      color: var(--color-text-primary);
+      font-size: var(--font-size-label);
+      transition: border-color var(--transition-speed) ease;
+    }
+
+    .recent-card:hover {
+      border-color: var(--color-accent);
+    }
+
+    .recent-card-thumb {
+      width: 100%;
+      aspect-ratio: 148 / 210; /* A5 verhouding */
+      background-color: var(--color-canvas-bg);
+      border-radius: var(--radius-sm);
+    }
+
+    .recent-card-name {
+      font-size: var(--font-size-label);
+      text-align: center;
+      color: var(--color-text-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip-link: eerste DOM-element (A-06) -->
+  <a href="#main-content" class="skip-link">Ga naar hoofdinhoud</a>
+
+  <!-- Statusmeldingen voor screenreaders (A-09) -->
+  <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="start-layout">
+
+    <header class="start-header" role="banner">
+      <h1>Kaarteditor</h1>
+      <!-- Dark/light mode schakelaar: Sprint 4 -->
+    </header>
+
+    <main class="start-main" id="main-content">
+
+      <!-- Primaire acties -->
+      <section class="start-actions" aria-label="Kaart starten of openen">
+        <a href="editor.html" class="btn btn-primary" role="button">
+          + Nieuwe kaart maken
+        </a>
+        <button type="button" id="btn-open" class="btn" aria-label="Bestaande kaart openen">
+          Openen
+        </button>
+      </section>
+
+      <!-- Recente kaarten (Sprint 3 implementatie) -->
+      <section class="recent-section" aria-label="Recente kaarten">
+        <h2>Recente kaarten</h2>
+        <div id="recent-cards-container">
+          <p class="recent-empty" id="recent-empty">
+            Nog geen recente kaarten. Maak een nieuwe kaart om te beginnen.
+          </p>
+          <div class="recent-grid" id="recent-grid" hidden aria-label="Recente kaarten lijst">
+            <!-- Gevuld door Sprint 3 js/storage.js -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    // Bestand openen — placeholder voor Sprint 3 (File System Access API)
+    document.getElementById('btn-open').addEventListener('click', function() {
+      announceStatus('Bestand openen is beschikbaar in Sprint 3.');
+    });
+  </script>
+
+</body>
+</html>
