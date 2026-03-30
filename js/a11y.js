@@ -192,9 +192,9 @@ var KaartA11y = (function () {
       if (btn) {
         btn.setAttribute('aria-current', 'true');
         currentHighlight = btn;
-        if (typeof btn.scrollIntoView === 'function') {
-          btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
+        /* Geen scrollIntoView hier: de browser scrollt automatisch naar
+           gefocuste elementen. Automatisch scrollen bij canvas-selectie
+           (slepen, klikken) is storend voor visuele gebruikers. */
       }
     }
   }

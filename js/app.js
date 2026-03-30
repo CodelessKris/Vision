@@ -21,7 +21,7 @@
     if (!tablist) return;
 
     cachedTabs   = Array.from(tablist.querySelectorAll('[role="tab"]'));
-    cachedPanels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+    cachedPanels = Array.from(tablist.parentElement.querySelectorAll(':scope > [role="tabpanel"]'));
 
     tablist.addEventListener('keydown', function (e) {
       var current = document.activeElement;
@@ -228,6 +228,8 @@
     KaartCanvas.init();
     KaartUndo.init();      /* na canvas, vóór toolbar */
     KaartStorage.init();   /* na canvas+undo: dirty-tracking + beforeunload */
+    KaartSettings.init();  /* vóór imagesearch + clipart: levert API key */
+    KaartImageSearch.init(); /* vóór clipart: getPanel() wordt gebruikt in buildModal */
     KaartClipart.init();   /* vóór toolbar zodat open() beschikbaar is */
     KaartToolbar.init();
     KaartProperties.init();
@@ -237,6 +239,12 @@
     KaartCanvas.onSelectionCleared(function ()    { KaartProperties.hide();   });
 
     initThemeToggle();     /* thema-schakelaar (A-19) */
+
+    /* Instellingen-knop */
+    var btnSettings = document.getElementById('btn-settings');
+    if (btnSettings) {
+      btnSettings.addEventListener('click', function () { KaartSettings.open(); });
+    }
 
     initTabs();
     initKeyboardShortcuts();

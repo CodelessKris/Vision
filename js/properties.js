@@ -25,6 +25,14 @@ var KaartProperties = (function () {
   function show(fabricObject) {
     if (!fabricObject) return;
 
+    /* Negeer stale callbacks: als het object dat show() aanroept niet
+       overeenkomt met het huidig actieve canvas-object, sla dan over.
+       Dit vangt het geval op waarbij selection:updated een oud object doorgeeft. */
+    var canvasActive = KaartCanvas.getActiveObject();
+    if (canvasActive && canvasActive !== fabricObject) {
+      fabricObject = canvasActive;
+    }
+
     activeObj = fabricObject;
 
     if (panel) {
@@ -398,6 +406,30 @@ var KaartProperties = (function () {
           if (rotateInput) rotateInput.value = Math.round(e.target.angle || 0);
           updating = false;
         }
+      });
+    }
+
+    /* ---- Centreren op canvas ---- */
+    var btnCenterH    = document.getElementById('btn-center-h');
+    var btnCenterV    = document.getElementById('btn-center-v');
+    var btnCenterBoth = document.getElementById('btn-center-both');
+
+    if (btnCenterH) {
+      btnCenterH.addEventListener('click', function () {
+        KaartCanvas.centerActiveObject('h');
+        announceStatus('Element horizontaal gecentreerd');
+      });
+    }
+    if (btnCenterV) {
+      btnCenterV.addEventListener('click', function () {
+        KaartCanvas.centerActiveObject('v');
+        announceStatus('Element verticaal gecentreerd');
+      });
+    }
+    if (btnCenterBoth) {
+      btnCenterBoth.addEventListener('click', function () {
+        KaartCanvas.centerActiveObject('both');
+        announceStatus('Element gecentreerd op canvas');
       });
     }
   }

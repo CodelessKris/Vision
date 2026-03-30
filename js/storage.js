@@ -77,8 +77,28 @@ var KaartStorage = (function () {
         background: state.inside ? state.inside.background : '#ffffff',
         canvas:     state.inside ? state.inside.json       : null
       },
-      embeddedAssets: {}
+      embeddedAssets: collectEmbeddedAssets(state)
     };
+  }
+
+  /* Scan beide zijden voor Fabric Image-objecten met kaartAssetId en bouw
+     de metadata-map op vanuit de KaartPixabay asset-registry. */
+  function collectEmbeddedAssets(state) {
+    if (typeof KaartPixabay === 'undefined') return {};
+    var registry = KaartPixabay.getAssetRegistry();
+    if (!registry) return {};
+
+    var assets = {};
+    ['front', 'inside'].forEach(function (side) {
+      var json = state[side] && state[side].json;
+      if (!json || !json.objects) return;
+      json.objects.forEach(function (obj) {
+        if (obj.kaartAssetId && registry[obj.kaartAssetId]) {
+          assets[obj.kaartAssetId] = registry[obj.kaartAssetId];
+        }
+      });
+    });
+    return assets;
   }
 
   function generateThumbnail() {
@@ -111,12 +131,18 @@ var KaartStorage = (function () {
       return true;
     });
 
+    /* Sla kaartData alleen op als de geserialiseerde grootte acceptabel is
+       (max 2 MB). Kaarten met ingesloten rasterafbeeldingen kunnen veel groter zijn
+       en zouden de localStorage-quota overschrijden. */
+    var serialized = JSON.stringify(data);
+    var kaartDataValue = serialized.length <= 2 * 1024 * 1024 ? serialized : null;
+
     recent.unshift({
       title:     data.title,
       created:   data.created,
       modified:  data.modified,
       thumbnail: thumbnail || (existing && existing.thumbnail) || '',
-      kaartData: JSON.stringify(data)
+      kaartData: kaartDataValue
     });
 
     if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
@@ -233,6 +259,11 @@ var KaartStorage = (function () {
         json:       data.inside.canvas     || null
       }
     };
+
+    /* Herstel asset-registry voor eventuele Pixabay-afbeeldingen in dit bestand. */
+    if (data.embeddedAssets && typeof KaartPixabay !== 'undefined') {
+      KaartPixabay.restoreAssets(data.embeddedAssets);
+    }
 
     /* Pauzeer elementenlijst tijdens laden — loadFromJSON vuurt anders object:added
        events die de lijst verdubbelen. rebuild() na de callback herstelt de juiste staat. */
@@ -434,6 +465,10 @@ var KaartStorage = (function () {
       btn.appendChild(name);
 
       btn.addEventListener('click', function () {
+        if (!entry.kaartData) {
+          announceStatus('Kaart is te groot om opnieuw te laden — open het bestand opnieuw via "Bestand openen".');
+          return;
+        }
         storeAndNavigate(entry.kaartData);
       });
 

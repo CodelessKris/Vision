@@ -161,6 +161,8 @@ var KaartClipart = (function () {
 
   /* --- Modal bouwen ------------------------------------------------------- */
 
+  var activeTab = 'library'; /* 'library' of 'online' */
+
   function buildModal() {
     modal = document.createElement('div');
     modal.id = 'clipart-modal';
@@ -173,30 +175,50 @@ var KaartClipart = (function () {
     modal.innerHTML =
       '<div class="modal-content clipart-modal-content">' +
         '<div class="modal-header">' +
-          '<h2 id="clipart-modal-title">Clipart kiezen</h2>' +
+          '<h2 id="clipart-modal-title">Clipart toevoegen</h2>' +
           '<button type="button" class="btn modal-close" id="clipart-modal-close" aria-label="Sluit clipart-bibliotheek">Sluiten</button>' +
         '</div>' +
-        '<div class="clipart-controls">' +
-          '<div class="clipart-search-row">' +
-            '<label for="clipart-search">Zoeken</label>' +
-            '<input type="search" id="clipart-search" placeholder="Zoek clipart..." autocomplete="off">' +
+        /* Tabbladen */
+        '<div class="clipart-tabs" role="tablist" aria-label="Clipart bron">' +
+          '<button type="button" role="tab" id="clipart-tab-library" class="btn clipart-tab" ' +
+                  'aria-selected="true" aria-controls="clipart-panel-library" tabindex="0">' +
+            'Bibliotheek' +
+          '</button>' +
+          '<button type="button" role="tab" id="clipart-tab-online" class="btn clipart-tab" ' +
+                  'aria-selected="false" aria-controls="clipart-panel-online" tabindex="-1">' +
+            'Online zoeken' +
+          '</button>' +
+        '</div>' +
+        /* Bibliotheek-tabpanel */
+        '<div role="tabpanel" id="clipart-panel-library" aria-labelledby="clipart-tab-library">' +
+          '<div class="clipart-controls">' +
+            '<div class="clipart-search-row">' +
+              '<label for="clipart-search">Zoeken</label>' +
+              '<input type="search" id="clipart-search" placeholder="Zoek clipart..." autocomplete="off">' +
+            '</div>' +
+            '<div class="clipart-categories" role="group" aria-label="Categorie filter">' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="true" data-category="alle">Alle</button>' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="verjaardag">Verjaardag</button>' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="feest">Feest</button>' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="natuur">Natuur</button>' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="dieren">Dieren</button>' +
+              '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="overig">Overig</button>' +
+            '</div>' +
           '</div>' +
-          '<div class="clipart-categories" role="group" aria-label="Categorie filter">' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="true" data-category="alle">Alle</button>' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="verjaardag">Verjaardag</button>' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="feest">Feest</button>' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="natuur">Natuur</button>' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="dieren">Dieren</button>' +
-            '<button type="button" class="btn btn-toggle" aria-pressed="false" data-category="overig">Overig</button>' +
+          '<div class="clipart-grid-container">' +
+            '<p class="clipart-empty" id="clipart-empty" hidden>Geen cliparts gevonden</p>' +
+            '<div class="clipart-grid" id="clipart-grid" role="grid" aria-label="Cliparts"></div>' +
           '</div>' +
         '</div>' +
-        '<div class="clipart-grid-container">' +
-          '<p class="clipart-empty" id="clipart-empty" hidden>Geen cliparts gevonden</p>' +
-          '<div class="clipart-grid" id="clipart-grid" role="grid" aria-label="Cliparts"></div>' +
-        '</div>' +
+        /* Online-tabpanel wordt hieronder toegevoegd via KaartImageSearch.getPanel() */
       '</div>';
 
     document.body.appendChild(modal);
+
+    /* Online-panel toevoegen vanuit imagesearch.js */
+    if (typeof KaartImageSearch !== 'undefined') {
+      modal.querySelector('.modal-content').appendChild(KaartImageSearch.getPanel());
+    }
 
     gridEl   = modal.querySelector('#clipart-grid');
     searchEl = modal.querySelector('#clipart-search');
@@ -209,8 +231,10 @@ var KaartClipart = (function () {
       if (e.target === modal) close();
     });
 
-    /* Escape sluit modal */
-    modal.addEventListener('keydown', handleModalKeydown);
+    /* Escape + focustrap */
+    trapFocus(modal, close);
+    /* Grid/tablist-pijltjestoetsen */
+    modal.addEventListener('keydown', handleModalNavKeydown);
 
     /* Zoekbalk */
     var debouncedFilter = debounce(function () {
@@ -224,6 +248,47 @@ var KaartClipart = (function () {
         setCategory(this.getAttribute('data-category'));
       });
     });
+
+    /* Tab-knoppen */
+    modal.querySelector('#clipart-tab-library').addEventListener('click', function () {
+      switchClipartTab('library');
+    });
+    modal.querySelector('#clipart-tab-online').addEventListener('click', function () {
+      switchClipartTab('online');
+    });
+  }
+
+  /* --- Tab wisselen -------------------------------------------------------- */
+
+  function switchClipartTab(tabId) {
+    if (activeTab === tabId) return;
+    activeTab = tabId;
+
+    var tabLibrary = modal.querySelector('#clipart-tab-library');
+    var tabOnline  = modal.querySelector('#clipart-tab-online');
+    var panelLib   = modal.querySelector('#clipart-panel-library');
+    var panelOnline = modal.querySelector('#clipart-panel-online');
+
+    if (tabId === 'library') {
+      tabLibrary.setAttribute('aria-selected', 'true');
+      tabLibrary.setAttribute('tabindex', '0');
+      tabOnline.setAttribute('aria-selected', 'false');
+      tabOnline.setAttribute('tabindex', '-1');
+      panelLib.hidden    = false;
+      if (panelOnline) panelOnline.hidden = true;
+      if (typeof KaartImageSearch !== 'undefined') KaartImageSearch.deactivate();
+      requestAnimationFrame(function () {
+        if (searchEl) searchEl.focus();
+      });
+    } else {
+      tabOnline.setAttribute('aria-selected', 'true');
+      tabOnline.setAttribute('tabindex', '0');
+      tabLibrary.setAttribute('aria-selected', 'false');
+      tabLibrary.setAttribute('tabindex', '-1');
+      panelLib.hidden    = true;
+      if (panelOnline) panelOnline.hidden = false;
+      if (typeof KaartImageSearch !== 'undefined') KaartImageSearch.activate();
+    }
   }
 
   /* --- Grid renderen ------------------------------------------------------ */
@@ -355,24 +420,10 @@ var KaartClipart = (function () {
     }
   }
 
-  /* --- Focustrap ---------------------------------------------------------- */
+  /* --- Keyboard-navigatie (grid + tablist) --------------------------------- */
 
-  function getFocusable() {
-    return Array.from(modal.querySelectorAll(
-      'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
-    )).filter(function (el) {
-      return !el.hidden && el.offsetParent !== null;
-    });
-  }
-
-  function handleModalKeydown(e) {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
-      return;
-    }
-
-    /* Pijltjestoets-navigatie in grid */
+  function handleModalNavKeydown(e) {
+    /* Pijltjestoets-navigatie in bibliotheek-grid */
     if (document.activeElement && document.activeElement.classList.contains('clipart-cell')) {
       if (['ArrowRight','ArrowLeft','ArrowDown','ArrowUp','Home','End'].indexOf(e.key) !== -1) {
         handleGridKeydown(e);
@@ -380,19 +431,21 @@ var KaartClipart = (function () {
       }
     }
 
-    /* Focustrap via Tab */
-    if (e.key === 'Tab') {
-      var focusable = getFocusable();
-      if (focusable.length === 0) return;
-      var first = focusable[0];
-      var last  = focusable[focusable.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
+    /* Pijltjestoets-navigatie in tablist */
+    if (document.activeElement && document.activeElement.getAttribute('role') === 'tab') {
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
+        switchClipartTab(activeTab === 'library' ? 'online' : 'library');
+        var newTab = modal.querySelector('[role="tab"][aria-selected="true"]');
+        if (newTab) newTab.focus();
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        first.focus();
+        switchClipartTab(activeTab === 'online' ? 'library' : 'online');
+        var newTab = modal.querySelector('[role="tab"][aria-selected="true"]');
+        if (newTab) newTab.focus();
+        return;
       }
     }
   }
@@ -418,6 +471,10 @@ var KaartClipart = (function () {
     focusedIndex = 0;
     if (searchEl) searchEl.value = '';
     modal.hidden = false;
+
+    /* Start altijd op de bibliotheek-tab */
+    activeTab = '';          /* wis guard zodat switchClipartTab niet short-circuit */
+    switchClipartTab('library');
 
     /* Defer naar na de browser-layoutpas: offsetWidth is 0 zolang modal hidden is.
        setCategory roept intern renderGrid() aan — dat moet ná de layout plaatsvinden

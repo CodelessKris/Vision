@@ -39,6 +39,13 @@
       </button>
 
       <button type="button"
+              id="btn-settings"
+              class="btn btn-settings"
+              aria-label="Instellingen">
+        Instellingen
+      </button>
+
+      <button type="button"
               id="btn-save"
               class="btn btn-save"
               aria-label="Kaart opslaan (Ctrl+S)">
@@ -415,6 +422,33 @@
                      aria-label="Rotatie in graden">
             </div>
 
+            <!-- Centreren -->
+            <div class="prop-group prop-group--full">
+              <div role="group" aria-labelledby="label-centreren">
+                <span id="label-centreren" class="prop-group-label">Centreren op canvas</span>
+                <div class="alignment-group">
+                  <button type="button"
+                          id="btn-center-h"
+                          class="btn"
+                          aria-label="Horizontaal centreren op canvas">
+                    ↔ Horizontaal
+                  </button>
+                  <button type="button"
+                          id="btn-center-v"
+                          class="btn"
+                          aria-label="Verticaal centreren op canvas">
+                    ↕ Verticaal
+                  </button>
+                  <button type="button"
+                          id="btn-center-both"
+                          class="btn"
+                          aria-label="Centreren op canvas (horizontaal en verticaal)">
+                    ⊞ Beide
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Dupliceren -->
             <div class="prop-group">
               <button type="button"
@@ -473,6 +507,9 @@
   <script src="js/utils.js"></script>
   <script src="js/canvas.js"></script>
   <script src="js/undo.js"></script>
+  <script src="js/pixabay.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/imagesearch.js"></script>
   <script src="js/clipart.js"></script>
   <script src="js/toolbar.js"></script>
   <script src="js/properties.js"></script>

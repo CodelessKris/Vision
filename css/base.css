@@ -253,6 +253,11 @@ html[data-theme="light"] .btn-toggle[aria-pressed="true"] {
   box-sizing: border-box;
 }
 
+/* Zorg dat [hidden] altijd wint van author display-regels (bijv. display:grid/flex) */
+[hidden] {
+  display: none !important;
+}
+
 html {
   font-size: 100%; /* respecteer browser-instellingen (A-22) */
 }

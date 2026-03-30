@@ -48,6 +48,36 @@ function bindColorPair(pickerId, hexId, onChange) {
   });
 }
 
+/* trapFocus — registreert Tab/Escape-handlers op een modaal element.
+   Geeft een cleanup-functie terug die de listeners verwijdert.
+   onEscape() wordt aangeroepen bij Escape of wanneer focus buiten de container komt. */
+function trapFocus(container, onEscape) {
+  function getFocusable() {
+    return Array.prototype.slice.call(
+      container.querySelectorAll('button:not([disabled]), input, a[href], [tabindex="0"]')
+    ).filter(function (el) {
+      return !el.closest('[hidden]') && el.offsetParent !== null;
+    });
+  }
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') { onEscape(); return; }
+    if (e.key !== 'Tab') return;
+    var focusable = getFocusable();
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last  = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
+  }
+
+  container.addEventListener('keydown', onKeydown);
+  return function cleanup() { container.removeEventListener('keydown', onKeydown); };
+}
+
 /* announceStatus — schrijft bericht naar de aria-live regio.
    Wist eerst (zodat herhaling van hetzelfde bericht opnieuw wordt uitgesproken),
    wacht 100 ms en schrijft dan — lang genoeg voor screenreaders om de wisseling te zien. */
