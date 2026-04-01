@@ -258,13 +258,26 @@ var KaartProperties = (function () {
       }
     });
 
-    /* Vet / cursief */
+    /* Vet / cursief — compenseer strokeWidth bij bold toggle zodat de
+       visuele omlijningsdikte consistent blijft (canvas tekst-rendering
+       maakt stroke dikker bij bold omdat de letterpaden breder zijn). */
+    var BOLD_STROKE_FACTOR = 0.65;
     var boldBtn = document.getElementById('prop-bold');
     if (boldBtn) {
       boldBtn.addEventListener('click', function () {
         var isActive = this.getAttribute('aria-pressed') === 'true';
-        applyProperty('fontWeight', isActive ? 'normal' : 'bold');
-        updateToggleButton('prop-bold', !isActive);
+        var goingBold = !isActive;
+        applyProperty('fontWeight', goingBold ? 'bold' : 'normal');
+
+        var sw = activeObj && activeObj.strokeWidth ? activeObj.strokeWidth : 0;
+        if (sw > 0) {
+          var compensated = goingBold ? sw * BOLD_STROKE_FACTOR : sw / BOLD_STROKE_FACTOR;
+          applyProperty('strokeWidth', Math.round(compensated * 10) / 10);
+          var swInput = document.getElementById('prop-stroke-width');
+          if (swInput) swInput.value = Math.round(compensated * 10) / 10;
+        }
+
+        updateToggleButton('prop-bold', goingBold);
       });
     }
 
