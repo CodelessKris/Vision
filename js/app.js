@@ -235,8 +235,15 @@
     KaartProperties.init();
     KaartA11y.init();      /* na canvas: koppelt canvas-events, bouwt elementenlijst */
 
-    KaartCanvas.onSelectionChange(function (obj) { KaartProperties.show(obj); });
-    KaartCanvas.onSelectionCleared(function ()    { KaartProperties.hide();   });
+    var propertiesPlaceholder = document.getElementById('properties-placeholder');
+    KaartCanvas.onSelectionChange(function (obj) {
+      KaartProperties.show(obj);
+      if (propertiesPlaceholder) propertiesPlaceholder.hidden = true;
+    });
+    KaartCanvas.onSelectionCleared(function () {
+      KaartProperties.hide();
+      if (propertiesPlaceholder) propertiesPlaceholder.hidden = false;
+    });
 
     initThemeToggle();     /* thema-schakelaar (A-19) */
 

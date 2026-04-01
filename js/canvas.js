@@ -27,7 +27,8 @@ var KaartCanvas = (function () {
     if (!container) return { width: 400, height: 566 };
 
     var availableWidth  = container.clientWidth - 32;
-    var availableHeight = Math.floor(window.innerHeight * 0.55);
+    var availableHeight = container.clientHeight ? container.clientHeight - 32
+                        : Math.floor(window.innerHeight * 0.70);
 
     var heightFromWidth = Math.floor(availableWidth / A5_RATIO);
     var widthFromHeight = Math.floor(availableHeight * A5_RATIO);
@@ -99,6 +100,12 @@ var KaartCanvas = (function () {
 
     resizeHandler = debounce(resizeCanvas, 250);
     window.addEventListener('resize', resizeHandler);
+
+    /* Na init: wacht tot de CSS-layout berekend is en herbereken de canvas-afmetingen.
+       Bij init heeft de flex-container mogelijk nog geen hoogte. */
+    requestAnimationFrame(function () {
+      resizeCanvas();
+    });
   }
 
   function updateCanvasWrapper(width, height) {

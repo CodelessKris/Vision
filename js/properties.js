@@ -37,8 +37,11 @@ var KaartProperties = (function () {
 
     if (panel) {
       _returnFocusEl = document.activeElement !== panel ? document.activeElement : _returnFocusEl;
-      panel.hidden = false;
     }
+
+    /* Toon header + properties secties (panel zelf is altijd zichtbaar) */
+    var h2 = panel ? panel.querySelector('h2') : null;
+    if (h2) h2.hidden = false;
 
     var isText = fabricObject.type === 'textbox' || fabricObject.type === 'i-text';
 
@@ -54,13 +57,19 @@ var KaartProperties = (function () {
 
   function hide() {
     activeObj = null;
-    if (panel) {
-      panel.hidden = true;
-      if (_returnFocusEl && typeof _returnFocusEl.focus === 'function') {
-        _returnFocusEl.focus();
-      }
-      _returnFocusEl = null;
+
+    /* Verberg properties secties (panel zelf blijft zichtbaar voor elementenlijst) */
+    var h2 = panel ? panel.querySelector('h2') : null;
+    if (h2) h2.hidden = true;
+
+    toggleSection('text-props', false);
+    toggleSection('wordart-section', false);
+    toggleSection('transform-section', false);
+
+    if (_returnFocusEl && typeof _returnFocusEl.focus === 'function') {
+      _returnFocusEl.focus();
     }
+    _returnFocusEl = null;
   }
 
   /* Toon/verberg een sectie op basis van ID */
@@ -439,10 +448,12 @@ var KaartProperties = (function () {
     initialized = true;
     panel = document.getElementById('properties-panel');
 
-    /* De tekstsecties zijn standaard verborgen via het id="text-props" wrapper.
-       We groeperen ze dynamisch door de bestaande .properties-grid een id te geven
-       zodat we die als eenheid kunnen tonen/verbergen.
-       In editor.html heeft de eerste .properties-grid al id="text-props". */
+    /* Bij start: verberg properties header + secties (geen element geselecteerd) */
+    var h2 = panel ? panel.querySelector('h2') : null;
+    if (h2) h2.hidden = true;
+    toggleSection('text-props', false);
+    toggleSection('wordart-section', false);
+    toggleSection('transform-section', false);
 
     bindEvents();
   }

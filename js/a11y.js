@@ -36,29 +36,13 @@ var KaartA11y = (function () {
     var parts = [];
 
     if (type === 'textbox' || type === 'i-text') {
-      var text    = (obj.text || '').replace(/\s+/g, ' ').trim().slice(0, 40);
-      var font    = obj.fontFamily || '';
-      var size    = Math.round(obj.fontSize || 0);
-      var color   = (obj.fill && typeof obj.fill === 'string') ? obj.fill.toUpperCase() : '';
-      var align   = alignLabel(obj.textAlign);
-
+      var text = (obj.text || '').replace(/\s+/g, ' ').trim().slice(0, 25);
       parts.push('Tekst: \u201c' + text + '\u201d');
-      if (font) parts.push(font);
-      if (align) parts.push(align);
-      if (size)  parts.push(size + 'pt');
-      if (color) parts.push(color);
 
     } else {
       /* Clipart of andere groep */
       var label = obj.kaartLabel || '';
       parts.push(label ? ('Clipart: ' + label) : 'Clipart');
-
-      var scale = Math.round((obj.scaleX || 1) * 100);
-      parts.push(scale + '%');
-
-      if (obj.angle && Math.round(obj.angle) !== 0) {
-        parts.push(Math.round(obj.angle) + '\u00b0');
-      }
     }
 
     return parts.join(', ');

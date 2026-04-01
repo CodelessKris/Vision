@@ -103,6 +103,15 @@
         &#8618; Opnieuw
       </button>
 
+      <!-- Tekst-gebaseerde elementenlijst (A-08) — navigatie-tool in werkbalk -->
+      <section id="element-list-panel" class="element-list-panel" aria-label="Elementen op de kaart" hidden>
+        <h2>Elementen</h2>
+        <p id="element-list-empty" class="element-list-empty">
+          Geen elementen op deze zijde.
+        </p>
+        <ol id="element-list" aria-label="Elementenlijst"></ol>
+      </section>
+
     </nav>
 
     <!-- ============================================================
@@ -165,316 +174,309 @@
            hidden>
       </div>
 
-      <!-- ====================================================
-           EIGENSCHAPPENPANEEL
-           Zichtbaar wanneer een element geselecteerd is.
-           Alle velden hebben een <label> (A-10).
-           Kleurpickers hebben ook hex-invoer (A-13).
-           ==================================================== -->
-      <!-- tabindex="-1": maakt het panel focusbaar voor programmatische focus (A-08) -->
-      <section class="properties-panel"
-               id="properties-panel"
-               aria-label="Eigenschappen van geselecteerd element"
-               tabindex="-1"
-               hidden>
+    </div><!-- .editor-center -->
 
-        <h2>Eigenschappen</h2>
+    <!-- ============================================================
+         RECHTER SIDEBAR — eigenschappen + elementenlijst
+         Altijd zichtbaar. Interne secties togglen op basis van selectie.
+         ============================================================ -->
+    <section class="properties-panel"
+             id="properties-panel"
+             aria-label="Eigenschappen en elementen"
+             tabindex="-1">
 
-        <div class="properties-grid" id="text-props">
+      <!-- Placeholder: zichtbaar wanneer geen element geselecteerd is -->
+      <div class="properties-placeholder"
+           id="properties-placeholder"
+           aria-hidden="true">
+        <p>Selecteer een element op het canvas om de eigenschappen te bewerken</p>
+      </div>
 
-          <!-- Font selector (FR-11, FR-13) -->
-          <div class="prop-group">
-            <label for="prop-font">Lettertype</label>
-            <select id="prop-font">
-              <option value="Atkinson Hyperlegible">Atkinson Hyperlegible</option>
-              <option value="Pacifico">Pacifico</option>
-              <option value="Caveat">Caveat</option>
-              <option value="Lobster">Lobster</option>
-              <option value="Dancing Script">Dancing Script</option>
-              <option value="Permanent Marker">Permanent Marker</option>
-              <option value="Patrick Hand">Patrick Hand</option>
-              <option value="Satisfy">Satisfy</option>
-            </select>
+      <h2>Eigenschappen</h2>
+
+      <div class="properties-grid" id="text-props">
+
+        <!-- Font selector (FR-11, FR-13) -->
+        <div class="prop-group">
+          <label for="prop-font">Lettertype</label>
+          <select id="prop-font">
+            <option value="Atkinson Hyperlegible">Atkinson Hyperlegible</option>
+            <option value="Pacifico">Pacifico</option>
+            <option value="Caveat">Caveat</option>
+            <option value="Lobster">Lobster</option>
+            <option value="Dancing Script">Dancing Script</option>
+            <option value="Permanent Marker">Permanent Marker</option>
+            <option value="Patrick Hand">Patrick Hand</option>
+            <option value="Satisfy">Satisfy</option>
+          </select>
+        </div>
+
+        <!-- Lettergrootte: slider + numerieke invoer (FR-11) -->
+        <div class="prop-group">
+          <label for="prop-size">Lettergrootte (pt)</label>
+          <div class="form-row">
+            <input type="range"
+                   id="prop-size-slider"
+                   min="12"
+                   max="120"
+                   value="36"
+                   aria-label="Lettergrootte slider"
+                   aria-valuemin="12"
+                   aria-valuemax="120"
+                   aria-valuenow="36">
+            <input type="number"
+                   id="prop-size"
+                   min="12"
+                   max="120"
+                   value="36"
+                   aria-label="Lettergrootte numerieke waarde">
           </div>
+        </div>
 
-          <!-- Lettergrootte: slider + numerieke invoer (FR-11) -->
-          <div class="prop-group">
-            <label for="prop-size">Lettergrootte (pt)</label>
-            <div class="form-row">
-              <input type="range"
-                     id="prop-size-slider"
-                     min="12"
-                     max="120"
-                     value="36"
-                     aria-label="Lettergrootte slider"
-                     aria-valuemin="12"
-                     aria-valuemax="120"
-                     aria-valuenow="36">
-              <input type="number"
-                     id="prop-size"
-                     min="12"
-                     max="120"
-                     value="36"
-                     aria-label="Lettergrootte numerieke waarde">
-            </div>
+        <!-- Tekstkleur: kleurpicker + hex-invoer (FR-11, A-13) -->
+        <div class="prop-group">
+          <label>Tekstkleur</label>
+          <div class="color-row">
+            <input type="color"
+                   id="prop-color"
+                   value="#333333"
+                   aria-label="Tekstkleur kiezen met kleurpicker">
+            <input type="text"
+                   id="prop-color-hex"
+                   value="#333333"
+                   maxlength="7"
+                   pattern="^#[0-9A-Fa-f]{6}$"
+                   aria-label="Tekstkleur als hex-waarde (bijvoorbeeld #333333)"
+                   placeholder="#333333">
           </div>
+        </div>
 
-          <!-- Tekstkleur: kleurpicker + hex-invoer (FR-11, A-13) -->
-          <div class="prop-group">
-            <label>Tekstkleur</label>
-            <div class="color-row">
-              <input type="color"
-                     id="prop-color"
-                     value="#333333"
-                     aria-label="Tekstkleur kiezen met kleurpicker">
-              <input type="text"
-                     id="prop-color-hex"
-                     value="#333333"
-                     maxlength="7"
-                     pattern="^#[0-9A-Fa-f]{6}$"
-                     aria-label="Tekstkleur als hex-waarde (bijvoorbeeld #333333)"
-                     placeholder="#333333">
-            </div>
-          </div>
-
-          <!-- Uitlijning (FR-11) -->
-          <div class="prop-group">
-            <div role="group" aria-labelledby="label-uitlijning">
-              <span id="label-uitlijning" class="prop-group-label">Uitlijning</span>
-              <div class="alignment-group">
-                <button type="button"
-                        id="prop-align-left"
-                        class="btn btn-toggle"
-                        aria-label="Links uitlijnen"
-                        aria-pressed="false">
-                  Links
-                </button>
-                <button type="button"
-                        id="prop-align-center"
-                        class="btn btn-toggle"
-                        aria-label="Centreren"
-                        aria-pressed="true">
-                  Midden
-                </button>
-                <button type="button"
-                        id="prop-align-right"
-                        class="btn btn-toggle"
-                        aria-label="Rechts uitlijnen"
-                        aria-pressed="false">
-                  Rechts
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Opmaak: vet en cursief (FR-11) -->
-          <div class="prop-group">
-            <div role="group" aria-labelledby="label-opmaak">
-              <span id="label-opmaak" class="prop-group-label">Opmaak</span>
-              <div class="format-group">
-                <button type="button"
-                        id="prop-bold"
-                        class="btn btn-toggle"
-                        aria-label="Vetgedrukt"
-                        aria-pressed="false">
-                  <strong>V</strong>
-                </button>
-                <button type="button"
-                        id="prop-italic"
-                        class="btn btn-toggle"
-                        aria-label="Cursief"
-                        aria-pressed="false">
-                  <em>C</em>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- .properties-grid -->
-
-        <!-- WordArt-effecten — uitklapbaar, alleen zichtbaar voor tekstelementen (FR-12) -->
-        <details class="wordart-section" id="wordart-section">
-          <summary>WordArt-effecten</summary>
-          <div class="properties-grid">
-
-            <!-- Slagschaduw -->
-            <div class="prop-group">
-              <div role="group" aria-labelledby="label-shadow">
-                <span id="label-shadow" class="prop-group-label">Slagschaduw</span>
-                <div class="form-row checkbox-row">
-                  <input type="checkbox"
-                         id="prop-shadow-enabled"
-                         aria-label="Slagschaduw aan of uit">
-                  <label for="prop-shadow-enabled" class="checkbox-label">Aan</label>
-                </div>
-                <div class="color-row">
-                  <input type="color"
-                         id="prop-shadow-color"
-                         value="#000000"
-                         aria-label="Schaduwkleur kiezen">
-                  <input type="text"
-                         id="prop-shadow-color-hex"
-                         value="#000000"
-                         maxlength="7"
-                         pattern="^#[0-9A-Fa-f]{6}$"
-                         aria-label="Schaduwkleur als hex-waarde"
-                         placeholder="#000000">
-                </div>
-                <div class="form-row">
-                  <label for="prop-shadow-offset">Afstand (px)</label>
-                  <input type="number"
-                         id="prop-shadow-offset"
-                         min="0"
-                         max="20"
-                         value="4"
-                         aria-label="Schaduw-afstand in pixels">
-                </div>
-              </div>
-            </div>
-
-            <!-- Omlijning -->
-            <div class="prop-group">
-              <div role="group" aria-labelledby="label-stroke">
-                <span id="label-stroke" class="prop-group-label">Omlijning</span>
-                <div class="color-row">
-                  <input type="color"
-                         id="prop-stroke-color"
-                         value="#000000"
-                         aria-label="Omlijningskleur kiezen">
-                  <input type="text"
-                         id="prop-stroke-color-hex"
-                         value="#000000"
-                         maxlength="7"
-                         pattern="^#[0-9A-Fa-f]{6}$"
-                         aria-label="Omlijningskleur als hex-waarde"
-                         placeholder="#000000">
-                </div>
-                <div class="form-row">
-                  <label for="prop-stroke-width">Dikte (px)</label>
-                  <input type="number"
-                         id="prop-stroke-width"
-                         min="0"
-                         max="20"
-                         value="0"
-                         aria-label="Omlijningsdikte in pixels">
-                </div>
-              </div>
-            </div>
-
-            <!-- Achtergrondvlak achter tekst -->
-            <div class="prop-group">
-              <div role="group" aria-labelledby="label-textbg">
-                <span id="label-textbg" class="prop-group-label">Achtergrondvlak</span>
-                <div class="color-row">
-                  <input type="color"
-                         id="prop-textbg-color"
-                         value="#ffffff"
-                         aria-label="Achtergrondkleur achter tekst kiezen">
-                  <input type="text"
-                         id="prop-textbg-color-hex"
-                         value=""
-                         maxlength="7"
-                         pattern="^#[0-9A-Fa-f]{6}$"
-                         aria-label="Achtergrondkleur achter tekst als hex-waarde"
-                         placeholder="leeg = geen">
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </details>
-
-        <!-- Positie & transformatie — zichtbaar voor alle elementen (FR-07, FR-08) -->
-        <details class="transform-section" id="transform-section">
-          <summary>Positie &amp; transformatie</summary>
-          <div class="properties-grid">
-
-            <!-- Schaal -->
-            <div class="prop-group">
-              <label>Schaal (%)</label>
-              <div class="form-row">
-                <input type="range"
-                       id="prop-scale-slider"
-                       min="10"
-                       max="500"
-                       value="100"
-                       aria-label="Schaal slider"
-                       aria-valuemin="10"
-                       aria-valuemax="500"
-                       aria-valuenow="100">
-                <input type="number"
-                       id="prop-scale"
-                       min="10"
-                       max="500"
-                       value="100"
-                       aria-label="Schaal percentage">
-              </div>
-            </div>
-
-            <!-- Rotatie -->
-            <div class="prop-group">
-              <label for="prop-rotate">Rotatie (graden)</label>
-              <input type="number"
-                     id="prop-rotate"
-                     min="0"
-                     max="359"
-                     value="0"
-                     aria-label="Rotatie in graden">
-            </div>
-
-            <!-- Centreren -->
-            <div class="prop-group prop-group--full">
-              <div role="group" aria-labelledby="label-centreren">
-                <span id="label-centreren" class="prop-group-label">Centreren op canvas</span>
-                <div class="alignment-group">
-                  <button type="button"
-                          id="btn-center-h"
-                          class="btn"
-                          aria-label="Horizontaal centreren op canvas">
-                    ↔ Horizontaal
-                  </button>
-                  <button type="button"
-                          id="btn-center-v"
-                          class="btn"
-                          aria-label="Verticaal centreren op canvas">
-                    ↕ Verticaal
-                  </button>
-                  <button type="button"
-                          id="btn-center-both"
-                          class="btn"
-                          aria-label="Centreren op canvas (horizontaal en verticaal)">
-                    ⊞ Beide
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Dupliceren -->
-            <div class="prop-group">
+        <!-- Uitlijning (FR-11) -->
+        <div class="prop-group">
+          <div role="group" aria-labelledby="label-uitlijning">
+            <span id="label-uitlijning" class="prop-group-label">Uitlijning</span>
+            <div class="alignment-group">
               <button type="button"
-                      id="btn-duplicate"
-                      class="btn"
-                      aria-label="Geselecteerd element dupliceren (Ctrl+D)">
-                Dupliceren
+                      id="prop-align-left"
+                      class="btn btn-toggle"
+                      aria-label="Links uitlijnen"
+                      aria-pressed="false">
+                Links
+              </button>
+              <button type="button"
+                      id="prop-align-center"
+                      class="btn btn-toggle"
+                      aria-label="Centreren"
+                      aria-pressed="true">
+                Midden
+              </button>
+              <button type="button"
+                      id="prop-align-right"
+                      class="btn btn-toggle"
+                      aria-label="Rechts uitlijnen"
+                      aria-pressed="false">
+                Rechts
               </button>
             </div>
-
           </div>
-        </details>
+        </div>
 
-      </section><!-- .properties-panel -->
+        <!-- Opmaak: vet en cursief (FR-11) -->
+        <div class="prop-group">
+          <div role="group" aria-labelledby="label-opmaak">
+            <span id="label-opmaak" class="prop-group-label">Opmaak</span>
+            <div class="format-group">
+              <button type="button"
+                      id="prop-bold"
+                      class="btn btn-toggle"
+                      aria-label="Vetgedrukt"
+                      aria-pressed="false">
+                <strong>V</strong>
+              </button>
+              <button type="button"
+                      id="prop-italic"
+                      class="btn btn-toggle"
+                      aria-label="Cursief"
+                      aria-pressed="false">
+                <em>C</em>
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <!-- Tekst-gebaseerde elementenlijst (A-08) — zichtbare alternatieve interface
-           naast het visuele canvas. Gevuld door a11y.js (hidden tot init klaar is). -->
-      <section id="element-list-panel" class="element-list-panel" aria-label="Elementen op de kaart" hidden>
-        <h2>Elementen</h2>
-        <p id="element-list-empty" class="element-list-empty">
-          Geen elementen op deze zijde.
-        </p>
-        <ol id="element-list" aria-label="Elementenlijst"></ol>
-      </section>
+      </div><!-- .properties-grid -->
 
-    </div><!-- .editor-center -->
+      <!-- WordArt-effecten — uitklapbaar, alleen zichtbaar voor tekstelementen (FR-12) -->
+      <details class="wordart-section" id="wordart-section">
+        <summary>WordArt-effecten</summary>
+        <div class="properties-grid">
+
+          <!-- Slagschaduw -->
+          <div class="prop-group">
+            <div role="group" aria-labelledby="label-shadow">
+              <span id="label-shadow" class="prop-group-label">Slagschaduw</span>
+              <div class="form-row checkbox-row">
+                <input type="checkbox"
+                       id="prop-shadow-enabled"
+                       aria-label="Slagschaduw aan of uit">
+                <label for="prop-shadow-enabled" class="checkbox-label">Aan</label>
+              </div>
+              <div class="color-row">
+                <input type="color"
+                       id="prop-shadow-color"
+                       value="#000000"
+                       aria-label="Schaduwkleur kiezen">
+                <input type="text"
+                       id="prop-shadow-color-hex"
+                       value="#000000"
+                       maxlength="7"
+                       pattern="^#[0-9A-Fa-f]{6}$"
+                       aria-label="Schaduwkleur als hex-waarde"
+                       placeholder="#000000">
+              </div>
+              <div class="form-row">
+                <label for="prop-shadow-offset">Afstand (px)</label>
+                <input type="number"
+                       id="prop-shadow-offset"
+                       min="0"
+                       max="20"
+                       value="4"
+                       aria-label="Schaduw-afstand in pixels">
+              </div>
+            </div>
+          </div>
+
+          <!-- Omlijning -->
+          <div class="prop-group">
+            <div role="group" aria-labelledby="label-stroke">
+              <span id="label-stroke" class="prop-group-label">Omlijning</span>
+              <div class="color-row">
+                <input type="color"
+                       id="prop-stroke-color"
+                       value="#000000"
+                       aria-label="Omlijningskleur kiezen">
+                <input type="text"
+                       id="prop-stroke-color-hex"
+                       value="#000000"
+                       maxlength="7"
+                       pattern="^#[0-9A-Fa-f]{6}$"
+                       aria-label="Omlijningskleur als hex-waarde"
+                       placeholder="#000000">
+              </div>
+              <div class="form-row">
+                <label for="prop-stroke-width">Dikte (px)</label>
+                <input type="number"
+                       id="prop-stroke-width"
+                       min="0"
+                       max="20"
+                       value="0"
+                       aria-label="Omlijningsdikte in pixels">
+              </div>
+            </div>
+          </div>
+
+          <!-- Achtergrondvlak achter tekst -->
+          <div class="prop-group">
+            <div role="group" aria-labelledby="label-textbg">
+              <span id="label-textbg" class="prop-group-label">Achtergrondvlak</span>
+              <div class="color-row">
+                <input type="color"
+                       id="prop-textbg-color"
+                       value="#ffffff"
+                       aria-label="Achtergrondkleur achter tekst kiezen">
+                <input type="text"
+                       id="prop-textbg-color-hex"
+                       value=""
+                       maxlength="7"
+                       pattern="^#[0-9A-Fa-f]{6}$"
+                       aria-label="Achtergrondkleur achter tekst als hex-waarde"
+                       placeholder="leeg = geen">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- Positie & transformatie — zichtbaar voor alle elementen (FR-07, FR-08) -->
+      <details class="transform-section" id="transform-section">
+        <summary>Positie &amp; transformatie</summary>
+        <div class="properties-grid">
+
+          <!-- Schaal -->
+          <div class="prop-group">
+            <label>Schaal (%)</label>
+            <div class="form-row">
+              <input type="range"
+                     id="prop-scale-slider"
+                     min="10"
+                     max="500"
+                     value="100"
+                     aria-label="Schaal slider"
+                     aria-valuemin="10"
+                     aria-valuemax="500"
+                     aria-valuenow="100">
+              <input type="number"
+                     id="prop-scale"
+                     min="10"
+                     max="500"
+                     value="100"
+                     aria-label="Schaal percentage">
+            </div>
+          </div>
+
+          <!-- Rotatie -->
+          <div class="prop-group">
+            <label for="prop-rotate">Rotatie (graden)</label>
+            <input type="number"
+                   id="prop-rotate"
+                   min="0"
+                   max="359"
+                   value="0"
+                   aria-label="Rotatie in graden">
+          </div>
+
+          <!-- Centreren -->
+          <div class="prop-group prop-group--full">
+            <div role="group" aria-labelledby="label-centreren">
+              <span id="label-centreren" class="prop-group-label">Centreren op canvas</span>
+              <div class="alignment-group">
+                <button type="button"
+                        id="btn-center-h"
+                        class="btn"
+                        aria-label="Horizontaal centreren op canvas">
+                  ↔ Horizontaal
+                </button>
+                <button type="button"
+                        id="btn-center-v"
+                        class="btn"
+                        aria-label="Verticaal centreren op canvas">
+                  ↕ Verticaal
+                </button>
+                <button type="button"
+                        id="btn-center-both"
+                        class="btn"
+                        aria-label="Centreren op canvas (horizontaal en verticaal)">
+                  ⊞ Beide
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dupliceren -->
+          <div class="prop-group">
+            <button type="button"
+                    id="btn-duplicate"
+                    class="btn"
+                    aria-label="Geselecteerd element dupliceren (Ctrl+D)">
+              Dupliceren
+            </button>
+          </div>
+
+        </div>
+      </details>
+
+    </section><!-- .properties-panel -->
 
     <!-- ============================================================
          FOOTER

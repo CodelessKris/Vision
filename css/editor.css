@@ -3,16 +3,17 @@
    Kaarteditor | Sprint 1
    ============================================================================= */
 
-/* --- Hoofd-layout: CSS Grid --- */
+/* --- Hoofd-layout: CSS Grid (3 kolommen: toolbar | center | properties) --- */
 .editor-layout {
   display: grid;
   grid-template-areas:
-    "header  header"
-    "toolbar center"
-    "footer  footer";
-  grid-template-columns: 220px 1fr;
+    "header     header     header"
+    "toolbar    center     properties"
+    "footer     footer     footer";
+  grid-template-columns: 220px 1fr 340px;
   grid-template-rows: auto 1fr auto;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 
   /* Compact, gecentreerde werkzone (A-26) */
   max-width: 1280px;
@@ -58,7 +59,8 @@
   padding: 16px 12px;
   background-color: var(--color-bg-secondary);
   border-right: var(--border-width) solid var(--color-bg-surface);
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .editor-toolbar button {
@@ -74,14 +76,15 @@
   border-color: var(--color-bg-surface);
 }
 
-/* --- Centraal gebied (tabs + canvas + properties) --- */
+/* --- Centraal gebied (tabs + canvas) — scrollt NIET --- */
 .editor-center {
   grid-area: center;
   display: flex;
   flex-direction: column;
   padding: 16px;
   gap: 16px;
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* --- ARIA Tabs: Voorkant / Binnenkant (A-11) --- */
@@ -122,16 +125,13 @@
   color: var(--color-text-primary);
 }
 
-/* --- Canvas container --- */
+/* --- Canvas container — vult beschikbare ruimte --- */
 .canvas-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  flex-shrink: 0;
-  /* Sticky zodat de kaart zichtbaar blijft terwijl het eigenschappenpaneel scrollt (A-26) */
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
   background-color: var(--color-bg-primary);
 }
 
@@ -139,6 +139,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  min-height: 0;
 }
 
 [role="tabpanel"][hidden] {
@@ -160,24 +162,89 @@
   z-index: 1; /* Sprint 2: basis voor overlay-stapeling (clipart-panel etc.) */
 }
 
-/* --- Eigenschappenpaneel (onder de canvas) --- */
+/* --- Eigenschappenpaneel (rechter sidebar, grid-area: properties) --- */
 .properties-panel {
+  grid-area: properties;
   background-color: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-bg-surface);
-  border-radius: var(--radius);
-  padding: 20px;
+  border-left: var(--border-width) solid var(--color-bg-surface);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.18);
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Sticky header within the scrollable sidebar */
 .properties-panel h2 {
-  font-size: var(--font-size-h2);
-  margin-bottom: 20px;
-  color: var(--color-text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-secondary);
+  margin: 0;
+  padding: 16px 20px 12px;
+  border-bottom: var(--border-width) solid var(--color-bg-surface);
+}
+
+/* Scrollable content area below the sticky header */
+.properties-panel > .properties-grid {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.properties-panel > .properties-grid:first-of-type {
+  padding-top: 16px;
+}
+
+/* Breathing room at the bottom of the scrollable sidebar */
+.properties-panel > :last-child {
+  padding-bottom: 20px;
+}
+
+/* --- Placeholder: zichtbaar wanneer geen element geselecteerd is (intern in sidebar) --- */
+.properties-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 20px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Subtle crosshair icon rendered via CSS — no external assets */
+.properties-placeholder::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 48px;
+  border: var(--border-width) solid var(--color-bg-surface);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 0 0 2px var(--color-bg-secondary);
+  background:
+    linear-gradient(var(--color-bg-surface), var(--color-bg-surface)) center / 2px 20px no-repeat,
+    linear-gradient(var(--color-bg-surface), var(--color-bg-surface)) center / 20px 2px no-repeat;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* Light mode: soften the inset shadow on the sidebar */
+[data-theme="light"] .properties-panel {
+  box-shadow: -3px 0 12px rgba(0, 0, 0, 0.06);
 }
 
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 .prop-group {
@@ -202,6 +269,32 @@
   color: var(--color-text-primary);
   margin-bottom: 8px;
 }
+
+/* --- Sidebar overrides: verticaal label → input patroon --- */
+
+/* form-row (slider + number): verticaal stapelen, slider volle breedte */
+.properties-panel .form-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.properties-panel .form-row input[type="range"] {
+  width: 100%;
+}
+
+.properties-panel .form-row input[type="number"] {
+  width: 100%;
+  flex: none;
+}
+
+/* Label naast input in WordArt/Transform (Afstand, Dikte): al verticaal via prop-group.
+   De inline labels binnen form-row moeten boven de input staan. */
+.properties-panel .form-row > label {
+  margin-bottom: 0;
+}
+
+/* color-row: horizontaal behouden (picker + hex zijn twee inputs voor dezelfde waarde) */
 
 /* Font-selector met preview */
 #prop-font {
@@ -253,56 +346,7 @@
   flex-wrap: wrap;
 }
 
-/* --- Responsief: 200% zoom / smalle vensters (A-22, A-27) --- */
-@media (max-width: 768px) {
-  .editor-layout {
-    grid-template-areas:
-      "header"
-      "toolbar"
-      "center"
-      "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto;
-  }
-
-  .editor-toolbar {
-    border-right: none;
-    border-bottom: var(--border-width) solid var(--color-bg-surface);
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 10px 12px;
-  }
-
-  .editor-toolbar button {
-    width: auto;
-    flex: 1;
-    min-width: 120px;
-  }
-
-  .editor-toolbar .divider {
-    display: none;
-  }
-
-  .properties-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .editor-footer {
-    justify-content: stretch;
-  }
-
-  .editor-footer button {
-    flex: 1;
-  }
-}
-
-/* Nog smaller (bijv. telefoon of 200% zoom op klein scherm) */
-@media (max-width: 480px) {
-  .tab-bar [role="tab"] {
-    min-width: 100px;
-    flex: 1;
-  }
-}
+/* Responsive breakpoints verwijderd — app wordt alleen op desktop gebruikt */
 
 /* =============================================================================
    Sprint 2 — Clipart modal, achtergrond-popover, WordArt/transform secties
@@ -495,6 +539,18 @@
 
 /* --- WordArt & Transform: uitklapbare <details> secties ------------------ */
 
+/* Within properties sidebar: full-width dividers met verticale ruimte */
+.properties-panel .wordart-section,
+.properties-panel .transform-section {
+  margin: 12px 0 0;
+  border: none;
+  border-top: var(--border-width) solid var(--color-bg-surface);
+  border-radius: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Outside properties sidebar (fallback for other contexts) */
 .wordart-section,
 .transform-section {
   margin-top: 16px;
@@ -545,16 +601,34 @@
 }
 
 .wordart-section > .properties-grid {
-  padding: 16px;
-  grid-template-columns: 1fr 1fr 1fr;
+  padding: 16px 20px 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
   align-items: start;
+}
+
+/* Geef role="group" containers binnen WordArt/Transform flexbox met gap
+   zodat sub-elementen (color-row, form-row, checkbox-row) consistent verdeeld zijn */
+.wordart-section .prop-group > [role="group"],
+.transform-section .prop-group > [role="group"] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* prop-group-label binnen deze secties hoeft geen eigen margin meer —
+   de flex gap regelt de afstand */
+.wordart-section .prop-group-label,
+.transform-section .prop-group-label {
+  margin-bottom: 0;
 }
 
 /* Transform-sectie: vaste 2-kolomsindeling zodat Schaal en Rotatie naast
    elkaar staan, en Centreren + Dupliceren de volle breedte innemen */
 .transform-section > .properties-grid {
-  padding: 16px;
-  grid-template-columns: 1fr 1fr;
+  padding: 16px 20px 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 /* Checkbox rij in WordArt (slagschaduw aan/uit) */
@@ -602,6 +676,9 @@ input[type="checkbox"] {
 
 .prop-group--full .alignment-group button {
   white-space: nowrap;
+  min-width: 0;
+  padding: 10px 8px;
+  font-size: var(--font-size-small);
 }
 
 /* =============================================================================
@@ -610,12 +687,14 @@ input[type="checkbox"] {
 
 /* --- Elementenlijst-paneel ------------------------------------------------- */
 
+/* Elementenlijst: in de linker toolbar, vult resterende ruimte */
 .element-list-panel {
-  background-color: var(--color-bg-secondary);
-  border: var(--border-width) solid var(--color-bg-surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-top: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: var(--border-width) solid var(--color-bg-surface);
+  margin-top: 8px;
+  padding: 12px 0 0;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -637,21 +716,21 @@ input[type="checkbox"] {
   margin: 0;
 }
 
-/* Geordende lijst — list-style geeft de z-volgorde visueel weer */
+/* Geordende lijst */
 #element-list {
-  list-style: decimal;
-  padding-left: 24px;
+  list-style: none;
+  padding-left: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Wrapper <li> */
+/* Wrapper <li> — element + acties gestapeld */
 .element-list-item-wrapper {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* Selecteer-knop: volledige breedte, tekst links uitgelijnd */
@@ -684,24 +763,23 @@ input[type="checkbox"] {
   box-shadow: 0 0 0 2px var(--color-focus);
 }
 
-/* Actie-balk: drie knoppen naast het selecteer-element */
+/* Actie-balk: drie knoppen horizontaal onder het element */
 .element-list-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 4px;
-  flex-shrink: 0;
 }
 
 .element-list-action-btn {
-  width: var(--target-min);
-  height: var(--target-min);
-  min-width: var(--target-min);
-  min-height: var(--target-min);
+  flex: 1;
+  height: 36px;
+  min-width: 0;
+  min-height: 36px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   background-color: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-bg-surface);
   border-radius: var(--radius-sm);
@@ -727,31 +805,7 @@ input[type="checkbox"] {
   }
 }
 
-/* --- Zoom-fixes: betere omloop bij 200% browservergroting (A-22, A-27) ----- */
-
-/* Voorkom horizontale scrollbalk door overflow op root te bewaken */
-body {
-  overflow-x: hidden;
-}
-
-/* Header: tabs op kleine viewports (200% zoom ≈ 640px op 1280px scherm) */
-@media (max-width: 768px) {
-  .editor-header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  /* Tabs krijgen gelijke breedte zodat ze altijd passen */
-  .tab-bar [role="tab"] {
-    min-width: 100px;
-    flex: 1;
-  }
-
-  /* Toolbar-knoppen: auto-breedte zodat ze niet buiten beeld lopen */
-  .editor-toolbar button {
-    min-width: auto;
-  }
-}
+/* Zoom-fixes responsive breakpoints verwijderd — app wordt alleen op desktop gebruikt */
 
 /* =============================================================================
    Sprint 5 — Online Afbeelding Zoeken (Pixabay) + Instellingen
@@ -1026,6 +1080,12 @@ body {
 
 /* --- Instellingen-modal ---------------------------------------------------- */
 
+/* Settings-modal boven clipart-modal (z-index: 1000) zodat "Instellingen openen"
+   vanuit de clipart-modal correct bovenop verschijnt */
+#settings-modal {
+  z-index: 1100;
+}
+
 .settings-modal-content {
   width: min(520px, 92vw);
 }
@@ -1115,6 +1175,8 @@ body {
   .editor-footer,
   .tab-bar,
   .skip-link,
+  .properties-panel,
+  .properties-placeholder,
   #status-announcer {
     display: none !important;
   }
