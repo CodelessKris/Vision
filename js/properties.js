@@ -134,9 +134,14 @@ var KaartProperties = (function () {
       var sc2 = (typeof obj.stroke === 'string' && obj.stroke) ? obj.stroke : '#000000';
       if (strokeColor) strokeColor.value = sc2;
       if (strokeColorHex) strokeColorHex.value = sc2.toUpperCase();
-      /* strokeWidth=1 is Fabric.js default maar niet zichtbaar zonder kleur;
-         toon 0 zolang er geen stroke-kleur is ingesteld. */
-      if (strokeWidth) strokeWidth.value = (obj.stroke) ? (obj.strokeWidth || 1) : 0;
+      /* Toon de door de gebruiker ingestelde waarde (_baseStrokeWidth),
+         niet de gecompenseerde waarde. strokeWidth=1 is Fabric.js default
+         maar niet zichtbaar zonder kleur; toon 0 zolang er geen stroke is. */
+      if (strokeWidth) {
+        var displaySW = obj._baseStrokeWidth != null ? obj._baseStrokeWidth
+                      : (obj.stroke) ? (obj.strokeWidth || 1) : 0;
+        strokeWidth.value = displaySW;
+      }
 
       /* WordArt — tekstachtergrond */
       var textBgColor   = document.getElementById('prop-textbg-color');
@@ -174,6 +179,25 @@ var KaartProperties = (function () {
   }
 
   /* --- Hulpfuncties -------------------------------------------------------- */
+
+  /* Impliciete stroke-compensatie: past de werkelijke strokeWidth aan op basis
+     van bold-status, zonder de door de gebruiker ingestelde waarde te wijzigen.
+     UI toont altijd _baseStrokeWidth; het Fabric-object krijgt de gecompenseerde waarde. */
+  var BOLD_STROKE_FACTOR = 0.65;
+
+  function syncStrokeCompensation() {
+    if (!activeObj) return;
+    var base = activeObj._baseStrokeWidth;
+    if (base == null) base = activeObj.strokeWidth || 0;
+    activeObj._baseStrokeWidth = base;
+    var isBold = activeObj.fontWeight === 'bold';
+    var actual = (isBold && base > 0) ? Math.round(base * BOLD_STROKE_FACTOR * 10) / 10 : base;
+    activeObj.set('strokeWidth', actual);
+    activeObj.setCoords();
+    KaartCanvas.getCanvas().renderAll();
+    if (typeof KaartA11y !== 'undefined') KaartA11y.updateObject(activeObj);
+    debouncedFireModified();
+  }
 
   function updateAlignmentButtons(align) {
     var alignMap = { left: 'prop-align-left', center: 'prop-align-center', right: 'prop-align-right' };
@@ -258,25 +282,17 @@ var KaartProperties = (function () {
       }
     });
 
-    /* Vet / cursief — compenseer strokeWidth bij bold toggle zodat de
-       visuele omlijningsdikte consistent blijft (canvas tekst-rendering
-       maakt stroke dikker bij bold omdat de letterpaden breder zijn). */
-    var BOLD_STROKE_FACTOR = 0.65;
+    /* Vet / cursief — impliciete strokeWidth-compensatie.
+       Bold letterpaden zijn breder waardoor de stroke visueel dikker lijkt.
+       _baseStrokeWidth slaat de door de gebruiker ingestelde waarde op;
+       de werkelijke strokeWidth wordt intern gecompenseerd. */
     var boldBtn = document.getElementById('prop-bold');
     if (boldBtn) {
       boldBtn.addEventListener('click', function () {
         var isActive = this.getAttribute('aria-pressed') === 'true';
         var goingBold = !isActive;
         applyProperty('fontWeight', goingBold ? 'bold' : 'normal');
-
-        var sw = activeObj && activeObj.strokeWidth ? activeObj.strokeWidth : 0;
-        if (sw > 0) {
-          var compensated = goingBold ? sw * BOLD_STROKE_FACTOR : sw / BOLD_STROKE_FACTOR;
-          applyProperty('strokeWidth', Math.round(compensated * 10) / 10);
-          var swInput = document.getElementById('prop-stroke-width');
-          if (swInput) swInput.value = Math.round(compensated * 10) / 10;
-        }
-
+        syncStrokeCompensation();
         updateToggleButton('prop-bold', goingBold);
       });
     }
@@ -320,7 +336,8 @@ var KaartProperties = (function () {
     if (strokeWidth) {
       strokeWidth.addEventListener('input', function () {
         var w = parseFloat(this.value) || 0;
-        applyProperty('strokeWidth', w);
+        if (activeObj) activeObj._baseStrokeWidth = w;
+        syncStrokeCompensation();
         if (w > 0) {
           var sc = (document.getElementById('prop-stroke-color') || {}).value || '#000000';
           applyProperty('stroke', sc);
