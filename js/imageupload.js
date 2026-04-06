@@ -40,17 +40,19 @@ var KaartImageUpload = (function () {
         '</div>' +
       '</div>';
 
-    /* Verborgen file input */
+    /* Verborgen file input — buiten de modal-DOM om zichtbaarheid te voorkomen */
     fileInput = document.createElement('input');
     fileInput.type   = 'file';
     fileInput.accept = ACCEPTED_EXTS;
     fileInput.setAttribute('aria-hidden', 'true');
     fileInput.tabIndex = -1;
-    fileInput.style.position = 'absolute';
+    fileInput.style.position = 'fixed';
+    fileInput.style.opacity  = '0';
     fileInput.style.width    = '0';
     fileInput.style.height   = '0';
     fileInput.style.overflow = 'hidden';
-    panel.appendChild(fileInput);
+    fileInput.style.pointerEvents = 'none';
+    document.body.appendChild(fileInput);
 
     /* Events */
     var browseBtn = panel.querySelector('#upload-browse-btn');
