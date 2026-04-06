@@ -437,6 +437,7 @@ var KaartStorage = (function () {
       return;
     }
     if (!text) return;
+    clearAutosave(); /* wis oude autosave — nieuwe template/bestand vervangt alles */
     parseAndApply(text);
   }
 
