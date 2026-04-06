@@ -95,7 +95,7 @@ var KaartExport = (function () {
 
   /* --- PDF-export --------------------------------------------------------- */
 
-  function buildAndSavePDF(frontUrl, insideUrl, filename, onDone) {
+  function buildPDF(frontUrl, insideUrl) {
     var doc = new jspdf.jsPDF({
       orientation: 'landscape',
       unit:        'mm',
@@ -103,7 +103,19 @@ var KaartExport = (function () {
     });
     if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
     if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
-    onDone(doc.output('blob'), filename);
+    return doc;
+  }
+
+  /* Betrouwbare download via data-URI — omzeilt Chrome's blob-UUID-probleem
+     bij programmatische clicks buiten een gebruikersgebaar-context. */
+  function downloadViaDataUri(doc, filename) {
+    var dataUri = doc.output('datauristring');
+    var a = document.createElement('a');
+    a.href     = dataUri;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   function downloadPDF() {
@@ -116,56 +128,60 @@ var KaartExport = (function () {
                   || 'Kaart';
     var filename  = cardTitle + '.pdf';
 
-    /* Chrome vereist dat showSaveFilePicker() wordt aangeroepen binnen een
-       gebruikersgebaar. Na de async renderBothSides-chain is die context weg.
-       Oplossing: vraag de bestandslocatie OP VOOR het renderen, bewaar de handle,
-       en schrijf de blob ernaar als het renderen klaar is. */
+    /* Strategie:
+       1. Probeer showSaveFilePicker() VOOR het renderen (vereist gebruikersgebaar).
+          Start rendering tegelijk — picker en rendering lopen parallel.
+       2. Als picker faalt (SecurityError / geblokkeerd): val terug op data-URI download.
+       3. Geen showSaveFilePicker: direct data-URI download. */
+
+    announceStatus('PDF wordt gegenereerd\u2026');
+
+    var pickerPromise = null;
     if (typeof window.showSaveFilePicker === 'function') {
-      window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: 'PDF bestand', accept: { 'application/pdf': ['.pdf'] } }]
-      }).then(function (handle) {
-        announceStatus('PDF wordt gegenereerd\u2026');
-        renderBothSides(function (frontUrl, insideUrl) {
-          try {
-            buildAndSavePDF(frontUrl, insideUrl, filename, function (blob) {
-              handle.createWritable()
-                .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
-                .then(function () { announceStatus('PDF opgeslagen: ' + filename); })
-                .catch(function () { announceStatus('Fout bij het opslaan van de PDF.'); });
+      try {
+        pickerPromise = window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{ description: 'PDF bestand', accept: { 'application/pdf': ['.pdf'] } }]
+        });
+      } catch (e) {
+        /* Synchroon falen (zeer ongebruikelijk) — fall through naar data-URI. */
+      }
+    }
+
+    renderBothSides(function (frontUrl, insideUrl) {
+      var doc;
+      try {
+        doc = buildPDF(frontUrl, insideUrl);
+      } catch (e) {
+        announceStatus('Fout bij het genereren van de PDF.');
+        return;
+      }
+
+      if (pickerPromise) {
+        pickerPromise.then(function (handle) {
+          var blob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
+          handle.createWritable()
+            .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
+            .then(function () { announceStatus('PDF opgeslagen: ' + filename); })
+            .catch(function () {
+              /* Schrijven mislukt: val terug op data-URI. */
+              downloadViaDataUri(doc, filename);
+              announceStatus('PDF gedownload: ' + filename);
             });
-          } catch (e) {
-            announceStatus('Fout bij het genereren van de PDF.');
+        }).catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            announceStatus('Opslaan geannuleerd.');
+          } else {
+            /* Picker geblokkeerd of niet ondersteund: val terug op data-URI. */
+            downloadViaDataUri(doc, filename);
+            announceStatus('PDF gedownload: ' + filename);
           }
         });
-      }).catch(function (err) {
-        if (err && err.name === 'AbortError') {
-          announceStatus('Opslaan geannuleerd.');
-        } else {
-          announceStatus('Fout bij het openen van het opslagvenster.');
-        }
-      });
-
-    } else {
-      /* Fallback voor Firefox/Safari (geen File System Access API). */
-      announceStatus('PDF wordt gegenereerd\u2026');
-      renderBothSides(function (frontUrl, insideUrl) {
-        try {
-          buildAndSavePDF(frontUrl, insideUrl, filename, function (blob) {
-            var url = URL.createObjectURL(blob);
-            var a   = document.createElement('a');
-            a.href     = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 10000);
-            announceStatus('PDF gedownload: ' + filename);
-          });
-        } catch (e) {
-          announceStatus('Fout bij het genereren van de PDF.');
-        }
-      });
-    }
+      } else {
+        downloadViaDataUri(doc, filename);
+        announceStatus('PDF gedownload: ' + filename);
+      }
+    });
   }
 
   /* --- Afdrukken ---------------------------------------------------------- */
