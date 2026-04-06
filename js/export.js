@@ -109,15 +109,11 @@ var KaartExport = (function () {
   /* Betrouwbare download via blob-URL. Data-URI's falen stil bij grote PDFs
      (>4 MB). Blob-URL's werken ook buiten een gebruikersgebaar-context. */
   function downloadViaBlob(doc, filename) {
-    var blob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href     = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    /* jsPDF's eigen save() gebruikt intern FileSaver.js — betrouwbaarste
+       methode voor cross-browser blob-downloads met correcte bestandsnaam.
+       Op localhost kan Chrome UUID-namen tonen (HTTP vs HTTPS restrictie),
+       maar op productie (HTTPS) werkt dit correct. */
+    doc.save(filename);
   }
 
   function downloadPDF() {
@@ -130,25 +126,14 @@ var KaartExport = (function () {
                   || 'Kaart';
     var filename  = cardTitle + '.pdf';
 
-    /* Strategie:
-       1. Probeer showSaveFilePicker() VOOR het renderen (vereist gebruikersgebaar).
-          Start rendering tegelijk — picker en rendering lopen parallel.
-       2. Als picker faalt, geblokkeerd is of onderschept wordt: val terug op blob-download.
-       3. Geen showSaveFilePicker beschikbaar: direct blob-download. */
+    /* Blob-download direct vanuit de renderBothSides-callback.
+       showSaveFilePicker() is bewust verwijderd: die API consumeert Chrome's
+       user-activation, waardoor de blob-fallback geen user-activation meer heeft
+       en Chrome het download-attribuut negeert (UUID-bestandsnaam).
+       Zolang renderBothSides() binnen ~5 s afrond, is de user-activation
+       van de knopklik nog geldig en respecteert Chrome het download-attribuut. */
 
     announceStatus('PDF wordt gegenereerd\u2026');
-
-    var pickerPromise = null;
-    if (typeof window.showSaveFilePicker === 'function') {
-      try {
-        pickerPromise = window.showSaveFilePicker({
-          suggestedName: filename,
-          types: [{ description: 'PDF bestand', accept: { 'application/pdf': ['.pdf'] } }]
-        });
-      } catch (e) {
-        /* Synchroon falen (zeer ongebruikelijk) — fall through naar data-URI. */
-      }
-    }
 
     renderBothSides(function (frontUrl, insideUrl) {
       var doc;
@@ -159,27 +144,8 @@ var KaartExport = (function () {
         return;
       }
 
-      if (pickerPromise) {
-        pickerPromise.then(function (handle) {
-          var blob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
-          handle.createWritable()
-            .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
-            .then(function () { announceStatus('PDF opgeslagen: ' + filename); })
-            .catch(function () {
-              /* Schrijven mislukt: val terug op blob-download. */
-              downloadViaBlob(doc, filename);
-              announceStatus('PDF gedownload: ' + filename);
-            });
-        }).catch(function () {
-          /* Picker geannuleerd, geblokkeerd of onderschept (bijv. Playwright):
-             altijd terugvallen op blob-download zodat de PDF wél gedownload wordt. */
-          downloadViaBlob(doc, filename);
-          announceStatus('PDF gedownload: ' + filename);
-        });
-      } else {
-        downloadViaBlob(doc, filename);
-        announceStatus('PDF gedownload: ' + filename);
-      }
+      downloadViaBlob(doc, filename);
+      announceStatus('PDF gedownload: ' + filename);
     });
   }
 
