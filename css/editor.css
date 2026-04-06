@@ -1308,6 +1308,14 @@ input[type="checkbox"] {
    Sprint 3 — Afdrukken
    ============================================================================= */
 
+/* Verwijder browser-standaardmarges zodat de A4-lay-out exact op één pagina past.
+   Zonder @page-regel voegt de browser ~15 mm marge toe waardoor de onderkant
+   overloopt naar een tweede pagina. */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
 /* Printcontainer: verborgen op scherm, zichtbaar bij @media print. */
 .print-only {
   display: none;
