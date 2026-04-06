@@ -95,44 +95,77 @@ var KaartExport = (function () {
 
   /* --- PDF-export --------------------------------------------------------- */
 
+  function buildAndSavePDF(frontUrl, insideUrl, filename, onDone) {
+    var doc = new jspdf.jsPDF({
+      orientation: 'landscape',
+      unit:        'mm',
+      format:      'a4'
+    });
+    if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
+    if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
+    onDone(doc.output('blob'), filename);
+  }
+
   function downloadPDF() {
     if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
       announceStatus('PDF-bibliotheek niet geladen — herlaad de pagina.');
       return;
     }
 
-    announceStatus('PDF wordt gegenereerd\u2026');
-
     var cardTitle = (document.getElementById('card-title') || {}).textContent
                   || 'Kaart';
+    var filename  = cardTitle + '.pdf';
 
-    renderBothSides(function (frontUrl, insideUrl) {
-      try {
-        var doc = new jspdf.jsPDF({
-          orientation: 'landscape',
-          unit:        'mm',
-          format:      'a4'
+    /* Chrome vereist dat showSaveFilePicker() wordt aangeroepen binnen een
+       gebruikersgebaar. Na de async renderBothSides-chain is die context weg.
+       Oplossing: vraag de bestandslocatie OP VOOR het renderen, bewaar de handle,
+       en schrijf de blob ernaar als het renderen klaar is. */
+    if (typeof window.showSaveFilePicker === 'function') {
+      window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: 'PDF bestand', accept: { 'application/pdf': ['.pdf'] } }]
+      }).then(function (handle) {
+        announceStatus('PDF wordt gegenereerd\u2026');
+        renderBothSides(function (frontUrl, insideUrl) {
+          try {
+            buildAndSavePDF(frontUrl, insideUrl, filename, function (blob) {
+              handle.createWritable()
+                .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
+                .then(function () { announceStatus('PDF opgeslagen: ' + filename); })
+                .catch(function () { announceStatus('Fout bij het opslaan van de PDF.'); });
+            });
+          } catch (e) {
+            announceStatus('Fout bij het genereren van de PDF.');
+          }
         });
+      }).catch(function (err) {
+        if (err && err.name === 'AbortError') {
+          announceStatus('Opslaan geannuleerd.');
+        } else {
+          announceStatus('Fout bij het openen van het opslagvenster.');
+        }
+      });
 
-        if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
-        if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
-
-        /* doc.save() geeft in Chrome soms een UUID-bestandsnaam zonder extensie.
-           Gebruik een blob + <a download> voor betrouwbare bestandsnaam. */
-        var blob = doc.output('blob');
-        var url  = URL.createObjectURL(blob);
-        var a    = document.createElement('a');
-        a.href     = url;
-        a.download = cardTitle + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-        announceStatus('PDF gedownload: ' + cardTitle + '.pdf');
-      } catch (e) {
-        announceStatus('Fout bij het genereren van de PDF.');
-      }
-    });
+    } else {
+      /* Fallback voor Firefox/Safari (geen File System Access API). */
+      announceStatus('PDF wordt gegenereerd\u2026');
+      renderBothSides(function (frontUrl, insideUrl) {
+        try {
+          buildAndSavePDF(frontUrl, insideUrl, filename, function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a   = document.createElement('a');
+            a.href     = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 10000);
+            announceStatus('PDF gedownload: ' + filename);
+          });
+        } catch (e) {
+          announceStatus('Fout bij het genereren van de PDF.');
+        }
+      });
+    }
   }
 
   /* --- Afdrukken ---------------------------------------------------------- */
