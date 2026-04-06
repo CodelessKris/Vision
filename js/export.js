@@ -106,16 +106,18 @@ var KaartExport = (function () {
     return doc;
   }
 
-  /* Betrouwbare download via data-URI — omzeilt Chrome's blob-UUID-probleem
-     bij programmatische clicks buiten een gebruikersgebaar-context. */
-  function downloadViaDataUri(doc, filename) {
-    var dataUri = doc.output('datauristring');
-    var a = document.createElement('a');
-    a.href     = dataUri;
+  /* Betrouwbare download via blob-URL. Data-URI's falen stil bij grote PDFs
+     (>4 MB). Blob-URL's werken ook buiten een gebruikersgebaar-context. */
+  function downloadViaBlob(doc, filename) {
+    var blob = new Blob([doc.output('arraybuffer')], { type: 'application/pdf' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
   }
 
   function downloadPDF() {
@@ -131,8 +133,8 @@ var KaartExport = (function () {
     /* Strategie:
        1. Probeer showSaveFilePicker() VOOR het renderen (vereist gebruikersgebaar).
           Start rendering tegelijk — picker en rendering lopen parallel.
-       2. Als picker faalt (SecurityError / geblokkeerd): val terug op data-URI download.
-       3. Geen showSaveFilePicker: direct data-URI download. */
+       2. Als picker faalt, geblokkeerd is of onderschept wordt: val terug op blob-download.
+       3. Geen showSaveFilePicker beschikbaar: direct blob-download. */
 
     announceStatus('PDF wordt gegenereerd\u2026');
 
@@ -164,21 +166,18 @@ var KaartExport = (function () {
             .then(function (w) { return w.write(blob).then(function () { return w.close(); }); })
             .then(function () { announceStatus('PDF opgeslagen: ' + filename); })
             .catch(function () {
-              /* Schrijven mislukt: val terug op data-URI. */
-              downloadViaDataUri(doc, filename);
+              /* Schrijven mislukt: val terug op blob-download. */
+              downloadViaBlob(doc, filename);
               announceStatus('PDF gedownload: ' + filename);
             });
-        }).catch(function (err) {
-          if (err && err.name === 'AbortError') {
-            announceStatus('Opslaan geannuleerd.');
-          } else {
-            /* Picker geblokkeerd of niet ondersteund: val terug op data-URI. */
-            downloadViaDataUri(doc, filename);
-            announceStatus('PDF gedownload: ' + filename);
-          }
+        }).catch(function () {
+          /* Picker geannuleerd, geblokkeerd of onderschept (bijv. Playwright):
+             altijd terugvallen op blob-download zodat de PDF wél gedownload wordt. */
+          downloadViaBlob(doc, filename);
+          announceStatus('PDF gedownload: ' + filename);
         });
       } else {
-        downloadViaDataUri(doc, filename);
+        downloadViaBlob(doc, filename);
         announceStatus('PDF gedownload: ' + filename);
       }
     });
