@@ -69,6 +69,15 @@ var KaartSettings = (function () {
               '</a>.' +
             '</p>' +
           '</div>' +
+          '<div class="form-group">' +
+            '<div class="settings-checkbox-row">' +
+              '<input type="checkbox" id="settings-autosave" checked>' +
+              '<label for="settings-autosave">Automatisch opslaan (elke 30 seconden)</label>' +
+            '</div>' +
+            '<p class="settings-help">' +
+              'Slaat een concept op in de browser. Niet hetzelfde als opslaan naar een bestand.' +
+            '</p>' +
+          '</div>' +
           '<div class="settings-actions">' +
             '<button type="button" class="btn btn-primary" id="settings-save-btn">Opslaan en testen</button>' +
           '</div>' +
@@ -97,6 +106,20 @@ var KaartSettings = (function () {
       this.textContent        = isText ? 'Toon' : 'Verberg';
       this.setAttribute('aria-pressed', isText ? 'false' : 'true');
       this.setAttribute('aria-label', isText ? 'Toon API-sleutel' : 'Verberg API-sleutel');
+    });
+
+    /* Autosave toggle — slaat direct op zonder API-key test */
+    modal.querySelector('#settings-autosave').addEventListener('change', function () {
+      var settings = getSettings();
+      settings.autosaveEnabled = this.checked;
+      saveSettings(settings);
+      if (this.checked) {
+        if (typeof KaartStorage !== 'undefined') KaartStorage.startAutosave();
+        announceStatus('Automatisch opslaan ingeschakeld');
+      } else {
+        if (typeof KaartStorage !== 'undefined') KaartStorage.stopAutosave();
+        announceStatus('Automatisch opslaan uitgeschakeld');
+      }
     });
 
     /* Opslaan */
@@ -148,6 +171,11 @@ var KaartSettings = (function () {
     /* Vul huidig opgeslagen sleutel in */
     var keyInput = modal.querySelector('#settings-pixabay-key');
     if (keyInput) keyInput.value = getPixabayApiKey();
+    /* Autosave checkbox synchroniseren */
+    var autosaveCheckbox = modal.querySelector('#settings-autosave');
+    if (autosaveCheckbox) {
+      autosaveCheckbox.checked = getSettings().autosaveEnabled !== false;
+    }
     /* Reset feedback */
     var feedback = modal.querySelector('#settings-feedback');
     if (feedback) setFeedback(feedback, '', '');

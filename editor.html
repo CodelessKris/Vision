@@ -29,6 +29,7 @@
       </a>
 
       <h1 id="card-title">Nieuwe kaart</h1>
+      <span id="autosave-indicator" class="autosave-indicator" aria-live="polite"></span>
 
       <button type="button"
               id="btn-theme-toggle"
@@ -72,6 +73,13 @@
               class="btn"
               aria-label="Clipart toevoegen">
         + Clipart
+      </button>
+
+      <button type="button"
+              id="btn-upload-image"
+              class="btn"
+              aria-label="Eigen afbeelding toevoegen">
+        + Afbeelding
       </button>
 
       <!-- Achtergrond-wrapper voor popover-positionering -->
@@ -118,6 +126,17 @@
          CENTRAAL GEBIED: tabs + canvas + eigenschappenpaneel
          ============================================================ -->
     <div class="editor-center">
+
+      <!-- Autosave recovery banner -->
+      <div id="autosave-recovery" class="autosave-recovery" role="alert" hidden>
+        <p>Er is een automatisch opgeslagen versie gevonden van
+          <strong id="autosave-recovery-title"></strong>
+          (opgeslagen om <time id="autosave-recovery-time"></time>).</p>
+        <div class="autosave-recovery-actions">
+          <button type="button" class="btn btn-primary" id="autosave-recover-btn">Herstellen</button>
+          <button type="button" class="btn" id="autosave-discard-btn">Negeren</button>
+        </div>
+      </div>
 
       <!-- ARIA Tabs: Voorkant / Binnenkant (A-11, FR-01)
            Patroon: WAI-ARIA Tabs (manual activation)
@@ -395,6 +414,31 @@
             </div>
           </div>
 
+          <!-- Tekst op pad -->
+          <div class="prop-group">
+            <label for="prop-path-shape">Padvorm</label>
+            <select id="prop-path-shape">
+              <option value="none">Geen (recht)</option>
+              <option value="arc">Boog</option>
+              <option value="invertedArc">Omgekeerde boog</option>
+              <option value="wave">Golf</option>
+              <option value="circle">Cirkel</option>
+            </select>
+          </div>
+
+          <div class="prop-group">
+            <label for="prop-path-radius">Kromming</label>
+            <div class="form-row">
+              <input type="range" id="prop-path-radius-slider"
+                     min="30" max="400" step="50" value="120"
+                     aria-label="Kromming slider"
+                     aria-valuemin="30" aria-valuemax="400" aria-valuenow="120">
+              <input type="number" id="prop-path-radius"
+                     min="30" max="400" step="50" value="120"
+                     aria-label="Kromming waarde">
+            </div>
+          </div>
+
         </div>
       </details>
 
@@ -508,10 +552,12 @@
   <!-- Applicatiemodules — volgorde is van belang (IIFE, geen ES modules) -->
   <script src="js/utils.js"></script>
   <script src="js/canvas.js"></script>
+  <script src="js/textpath.js"></script>
   <script src="js/undo.js"></script>
   <script src="js/pixabay.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/imagesearch.js"></script>
+  <script src="js/imageupload.js"></script>
   <script src="js/clipart.js"></script>
   <script src="js/toolbar.js"></script>
   <script src="js/properties.js"></script>

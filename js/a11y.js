@@ -35,12 +35,17 @@ var KaartA11y = (function () {
     var type  = obj.type || '';
     var parts = [];
 
-    if (type === 'textbox' || type === 'i-text') {
+    if (type === 'textbox' || type === 'i-text' || type === 'text') {
       var text = (obj.text || '').replace(/\s+/g, ' ').trim().slice(0, 25);
       parts.push('Tekst: \u201c' + text + '\u201d');
 
+    } else if (type === 'image') {
+      /* Geuploadde of online afbeelding */
+      var imgLabel = obj.kaartLabel || 'Afbeelding';
+      parts.push('Afbeelding: ' + imgLabel);
+
     } else {
-      /* Clipart of andere groep */
+      /* Clipart (SVG groep) of ander type */
       var label = obj.kaartLabel || '';
       parts.push(label ? ('Clipart: ' + label) : 'Clipart');
     }

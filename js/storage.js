@@ -162,6 +162,7 @@ var KaartStorage = (function () {
 
   function onSaveSuccess(data, thumbnail) {
     isDirty = false;
+    clearAutosave(); /* concept wissen na expliciet opslaan */
     addToRecent(data, thumbnail);
 
     /* Titel in de editor-header bijwerken. */
@@ -496,6 +497,153 @@ var KaartStorage = (function () {
         e.returnValue = '';
       }
     });
+
+    /* Start autosave als ingeschakeld */
+    scheduleAutosave();
+  }
+
+  /* --- Autosave ------------------------------------------------------------ */
+
+  var AUTOSAVE_DATA_KEY      = 'kaarteditor-autosave-data';
+  var AUTOSAVE_TIMESTAMP_KEY = 'kaarteditor-autosave-timestamp';
+  var AUTOSAVE_TITLE_KEY     = 'kaarteditor-autosave-title';
+  var AUTOSAVE_INTERVAL      = 30000; /* 30 seconden */
+  var AUTOSAVE_MAX_SIZE      = 4 * 1024 * 1024; /* 4 MB */
+  var autosaveTimer          = null;
+
+  function isAutosaveEnabled() {
+    if (typeof KaartSettings === 'undefined') return true;
+    var settings = KaartSettings.getSettings();
+    return settings.autosaveEnabled !== false; /* standaard: aan */
+  }
+
+  function scheduleAutosave() {
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(function () {
+      performAutosave();
+      scheduleAutosave();
+    }, AUTOSAVE_INTERVAL);
+  }
+
+  function cancelAutosave() {
+    if (autosaveTimer) {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = null;
+    }
+  }
+
+  function performAutosave() {
+    if (!isDirty) return;
+    if (!isAutosaveEnabled()) return;
+
+    try {
+      var data    = buildKaartData();
+      var jsonStr = JSON.stringify(data);
+
+      if (jsonStr.length > AUTOSAVE_MAX_SIZE) {
+        updateAutosaveIndicator('too-large');
+        return;
+      }
+
+      localStorage.setItem(AUTOSAVE_DATA_KEY, jsonStr);
+      localStorage.setItem(AUTOSAVE_TIMESTAMP_KEY, nowISO());
+      localStorage.setItem(AUTOSAVE_TITLE_KEY, data.title || 'Naamloze kaart');
+      updateAutosaveIndicator('saved');
+    } catch (e) {
+      /* QuotaExceededError of andere localStorage-fout */
+      updateAutosaveIndicator('error');
+    }
+  }
+
+  function updateAutosaveIndicator(status) {
+    var el = document.getElementById('autosave-indicator');
+    if (!el) return;
+
+    el.className = 'autosave-indicator';
+
+    switch (status) {
+      case 'saved':
+        var time = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        el.textContent = 'Opgeslagen om ' + time;
+        el.classList.add('autosave-indicator--saved');
+        break;
+      case 'too-large':
+        el.textContent = 'Te groot voor autosave';
+        el.classList.add('autosave-indicator--warning');
+        break;
+      case 'error':
+        el.textContent = 'Autosave mislukt';
+        el.classList.add('autosave-indicator--warning');
+        break;
+      default:
+        el.textContent = '';
+    }
+  }
+
+  function clearAutosave() {
+    try {
+      localStorage.removeItem(AUTOSAVE_DATA_KEY);
+      localStorage.removeItem(AUTOSAVE_TIMESTAMP_KEY);
+      localStorage.removeItem(AUTOSAVE_TITLE_KEY);
+    } catch (e) { /* negeer */ }
+    updateAutosaveIndicator('');
+  }
+
+  function getAutosaveInfo() {
+    try {
+      var timestamp = localStorage.getItem(AUTOSAVE_TIMESTAMP_KEY);
+      var title     = localStorage.getItem(AUTOSAVE_TITLE_KEY);
+      var hasData   = !!localStorage.getItem(AUTOSAVE_DATA_KEY);
+      if (!hasData || !timestamp) return null;
+      return { timestamp: timestamp, title: title || 'Naamloze kaart' };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function checkAutosaveRecovery() {
+    var info = getAutosaveInfo();
+    if (!info) return;
+
+    var banner    = document.getElementById('autosave-recovery');
+    var titleEl   = document.getElementById('autosave-recovery-title');
+    var timeEl    = document.getElementById('autosave-recovery-time');
+    if (!banner) return;
+
+    /* Toon tijdstip als HH:MM */
+    var d = new Date(info.timestamp);
+    var timeStr = d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+
+    if (titleEl) titleEl.textContent = info.title;
+    if (timeEl) {
+      timeEl.textContent = timeStr;
+      timeEl.setAttribute('datetime', info.timestamp);
+    }
+
+    banner.hidden = false;
+  }
+
+  function recoverAutosave() {
+    try {
+      var text = localStorage.getItem(AUTOSAVE_DATA_KEY);
+      if (text) {
+        parseAndApply(text);
+        clearAutosave();
+        announceStatus('Automatisch opgeslagen versie hersteld');
+      }
+    } catch (e) {
+      announceStatus('Herstel mislukt');
+    }
+
+    var banner = document.getElementById('autosave-recovery');
+    if (banner) banner.hidden = true;
+  }
+
+  function dismissAutosave() {
+    clearAutosave();
+    var banner = document.getElementById('autosave-recovery');
+    if (banner) banner.hidden = true;
+    announceStatus('Automatisch opgeslagen versie genegeerd');
   }
 
   /* --- Publieke API ------------------------------------------------------- */
@@ -509,6 +657,14 @@ var KaartStorage = (function () {
     loadRecent:              loadRecent,
     openFromStartScreen:     openFromStartScreen,
     openFromStartScreenFile: openFromStartScreenFile,
+    storeAndNavigate:        storeAndNavigate,
+    /* Autosave */
+    startAutosave:           scheduleAutosave,
+    stopAutosave:            cancelAutosave,
+    checkAutosaveRecovery:   checkAutosaveRecovery,
+    recoverAutosave:         recoverAutosave,
+    dismissAutosave:         dismissAutosave,
+    clearAutosave:           clearAutosave,
     /* Export-module gebruikt deze om dirty-staat te bewaren rondom rendering. */
     getDirty: function ()    { return isDirty; },
     setDirty: function (v)   { isDirty = v; }

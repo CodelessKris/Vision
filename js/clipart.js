@@ -188,6 +188,10 @@ var KaartClipart = (function () {
                   'aria-selected="false" aria-controls="clipart-panel-online" tabindex="-1">' +
             'Online zoeken' +
           '</button>' +
+          '<button type="button" role="tab" id="clipart-tab-upload" class="btn clipart-tab" ' +
+                  'aria-selected="false" aria-controls="clipart-panel-upload" tabindex="-1">' +
+            'Eigen afbeelding' +
+          '</button>' +
         '</div>' +
         /* Bibliotheek-tabpanel */
         '<div role="tabpanel" id="clipart-panel-library" aria-labelledby="clipart-tab-library">' +
@@ -218,6 +222,11 @@ var KaartClipart = (function () {
     /* Online-panel toevoegen vanuit imagesearch.js */
     if (typeof KaartImageSearch !== 'undefined') {
       modal.querySelector('.modal-content').appendChild(KaartImageSearch.getPanel());
+    }
+
+    /* Upload-panel toevoegen vanuit imageupload.js */
+    if (typeof KaartImageUpload !== 'undefined') {
+      modal.querySelector('.modal-content').appendChild(KaartImageUpload.getPanel());
     }
 
     gridEl   = modal.querySelector('#clipart-grid');
@@ -256,6 +265,9 @@ var KaartClipart = (function () {
     modal.querySelector('#clipart-tab-online').addEventListener('click', function () {
       switchClipartTab('online');
     });
+    modal.querySelector('#clipart-tab-upload').addEventListener('click', function () {
+      switchClipartTab('upload');
+    });
   }
 
   /* --- Tab wisselen -------------------------------------------------------- */
@@ -264,30 +276,39 @@ var KaartClipart = (function () {
     if (activeTab === tabId) return;
     activeTab = tabId;
 
-    var tabLibrary = modal.querySelector('#clipart-tab-library');
-    var tabOnline  = modal.querySelector('#clipart-tab-online');
-    var panelLib   = modal.querySelector('#clipart-panel-library');
-    var panelOnline = modal.querySelector('#clipart-panel-online');
+    var tabs = [
+      { id: 'library', tabEl: '#clipart-tab-library', panelEl: '#clipart-panel-library' },
+      { id: 'online',  tabEl: '#clipart-tab-online',  panelEl: '#clipart-panel-online' },
+      { id: 'upload',  tabEl: '#clipart-tab-upload',  panelEl: '#clipart-panel-upload' }
+    ];
 
+    tabs.forEach(function (t) {
+      var tab   = modal.querySelector(t.tabEl);
+      var panel = modal.querySelector(t.panelEl);
+      var isActive = t.id === tabId;
+
+      if (tab) {
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      }
+      if (panel) panel.hidden = !isActive;
+    });
+
+    /* Activeer/deactiveer sub-modules */
+    if (typeof KaartImageSearch !== 'undefined') {
+      if (tabId === 'online') KaartImageSearch.activate();
+      else KaartImageSearch.deactivate();
+    }
+    if (typeof KaartImageUpload !== 'undefined') {
+      if (tabId === 'upload') KaartImageUpload.activate();
+      else KaartImageUpload.deactivate();
+    }
+
+    /* Focus naar zoekbalk bij bibliotheek */
     if (tabId === 'library') {
-      tabLibrary.setAttribute('aria-selected', 'true');
-      tabLibrary.setAttribute('tabindex', '0');
-      tabOnline.setAttribute('aria-selected', 'false');
-      tabOnline.setAttribute('tabindex', '-1');
-      panelLib.hidden    = false;
-      if (panelOnline) panelOnline.hidden = true;
-      if (typeof KaartImageSearch !== 'undefined') KaartImageSearch.deactivate();
       requestAnimationFrame(function () {
         if (searchEl) searchEl.focus();
       });
-    } else {
-      tabOnline.setAttribute('aria-selected', 'true');
-      tabOnline.setAttribute('tabindex', '0');
-      tabLibrary.setAttribute('aria-selected', 'false');
-      tabLibrary.setAttribute('tabindex', '-1');
-      panelLib.hidden    = true;
-      if (panelOnline) panelOnline.hidden = false;
-      if (typeof KaartImageSearch !== 'undefined') KaartImageSearch.activate();
     }
   }
 
@@ -431,20 +452,24 @@ var KaartClipart = (function () {
       }
     }
 
-    /* Pijltjestoets-navigatie in tablist */
+    /* Pijltjestoets-navigatie in tablist (cyclisch door 3 tabs) */
     if (document.activeElement && document.activeElement.getAttribute('role') === 'tab') {
+      var tabOrder = ['library', 'online', 'upload'];
+      var curIdx   = tabOrder.indexOf(activeTab);
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        switchClipartTab(activeTab === 'library' ? 'online' : 'library');
+        var nextIdx = (curIdx + 1) % tabOrder.length;
+        switchClipartTab(tabOrder[nextIdx]);
         var newTab = modal.querySelector('[role="tab"][aria-selected="true"]');
         if (newTab) newTab.focus();
         return;
       }
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        switchClipartTab(activeTab === 'online' ? 'library' : 'online');
-        var newTab = modal.querySelector('[role="tab"][aria-selected="true"]');
-        if (newTab) newTab.focus();
+        var prevIdx = (curIdx - 1 + tabOrder.length) % tabOrder.length;
+        switchClipartTab(tabOrder[prevIdx]);
+        var newTab2 = modal.querySelector('[role="tab"][aria-selected="true"]');
+        if (newTab2) newTab2.focus();
         return;
       }
     }
@@ -504,10 +529,21 @@ var KaartClipart = (function () {
     buildModal();
   }
 
+  function openUploadTab() {
+    openerBtn = document.activeElement;
+    focusedIndex = 0;
+    if (searchEl) searchEl.value = '';
+    modal.hidden = false;
+
+    activeTab = '';
+    switchClipartTab('upload');
+  }
+
   return {
-    init:  init,
-    open:  open,
-    close: close
+    init:          init,
+    open:          open,
+    openUploadTab: openUploadTab,
+    close:         close
   };
 
 })();

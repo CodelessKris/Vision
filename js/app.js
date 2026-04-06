@@ -230,6 +230,7 @@
     KaartStorage.init();   /* na canvas+undo: dirty-tracking + beforeunload */
     KaartSettings.init();  /* vóór imagesearch + clipart: levert API key */
     KaartImageSearch.init(); /* vóór clipart: getPanel() wordt gebruikt in buildModal */
+    KaartImageUpload.init(); /* vóór clipart: getPanel() wordt gebruikt in buildModal */
     KaartClipart.init();   /* vóór toolbar zodat open() beschikbaar is */
     KaartToolbar.init();
     KaartProperties.init();
@@ -257,6 +258,25 @@
     initKeyboardShortcuts();
     KaartStorage.checkPendingOpen(); /* laad kaart uit sessionStorage indien aanwezig */
 
+    /* Autosave recovery — alleen als er geen kaart uit sessionStorage geladen is */
+    if (!sessionStorage.getItem('kaarteditor-pending-open')) {
+      KaartStorage.checkAutosaveRecovery();
+    }
+
+    /* Autosave recovery banner event handlers */
+    var btnRecover = document.getElementById('autosave-recover-btn');
+    if (btnRecover) {
+      btnRecover.addEventListener('click', function () {
+        KaartStorage.recoverAutosave();
+      });
+    }
+    var btnDiscard = document.getElementById('autosave-discard-btn');
+    if (btnDiscard) {
+      btnDiscard.addEventListener('click', function () {
+        KaartStorage.dismissAutosave();
+      });
+    }
+
     /* Undo/redo knoppen (aria-disabled wordt dynamisch beheerd door KaartUndo) */
     var btnUndo = document.getElementById('btn-undo');
     if (btnUndo) {
@@ -279,6 +299,17 @@
         }
       });
     }
+
+    /* Eigen afbeelding toevoegen */
+    var btnUpload = document.getElementById('btn-upload-image');
+    if (btnUpload) {
+      btnUpload.addEventListener('click', function () {
+        KaartClipart.openUploadTab();
+      });
+    }
+
+    /* Drag-and-drop afbeeldingen op canvas */
+    KaartImageUpload.initCanvasDropZone();
 
     var btnSave = document.getElementById('btn-save');
     if (btnSave) {

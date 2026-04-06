@@ -55,6 +55,71 @@
       max-width: 320px;
     }
 
+    /* --- Sjablonen ----------------------------------------------------------- */
+
+    .template-section {
+      width: 100%;
+      margin-bottom: 48px;
+    }
+
+    .template-section h2 {
+      margin-bottom: 20px;
+      color: var(--color-text-primary);
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+    }
+
+    .template-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background-color: var(--color-bg-secondary);
+      border: var(--border-width) solid var(--color-bg-surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+      min-height: var(--target-min);
+      text-decoration: none;
+      color: var(--color-text-primary);
+      transition: border-color var(--transition-speed) ease;
+    }
+
+    .template-card:hover {
+      border-color: var(--color-accent);
+    }
+
+    .template-card-thumb {
+      width: 100%;
+      aspect-ratio: 148 / 210;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .template-card-thumb svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .template-card-name {
+      font-size: var(--font-size-label);
+      font-weight: 700;
+      text-align: center;
+      color: var(--color-text-primary);
+    }
+
+    .template-card-category {
+      font-size: var(--font-size-small);
+      color: var(--color-text-secondary);
+    }
+
+    /* --- Recente kaarten --------------------------------------------------- */
+
     .recent-section {
       width: 100%;
     }
@@ -164,6 +229,14 @@
         </button>
       </section>
 
+      <!-- Sjablonen als startpunt -->
+      <section class="template-section" aria-label="Sjablonen">
+        <h2>Beginnen met een sjabloon</h2>
+        <div class="template-grid" id="template-grid" aria-label="Beschikbare sjablonen">
+          <!-- Gevuld door js/templates.js -->
+        </div>
+      </section>
+
       <!-- Recente kaarten (Sprint 3 implementatie) -->
       <section class="recent-section" aria-label="Recente kaarten">
         <h2>Recente kaarten</h2>
@@ -183,9 +256,13 @@
 
   <script src="js/utils.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/templates.js"></script>
   <script>
     /* Thema-schakelaar initialiseren (A-19) */
     initThemeToggle();
+
+    /* Sjablonen tonen */
+    KaartTemplates.renderGrid();
 
     /* Recente kaarten tonen bij laden van de pagina. */
     KaartStorage.loadRecent();

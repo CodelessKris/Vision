@@ -8,6 +8,7 @@ var KaartProperties = (function () {
 
   var panel          = null;
   var activeObj      = null;
+  var lastActiveObj  = null; /* bewaar referentie voor select-dropdown focus-verlies */
   var updating       = false;
   var initialized    = false;
   var _returnFocusEl = null; /* focus-herstel bij sluiten panel */
@@ -34,16 +35,20 @@ var KaartProperties = (function () {
     }
 
     activeObj = fabricObject;
+    lastActiveObj = fabricObject;
 
     if (panel) {
       _returnFocusEl = document.activeElement !== panel ? document.activeElement : _returnFocusEl;
     }
 
+    /* Bewaar scroll positie voordat sections worden getoggeld */
+    var scrollTop = panel ? panel.scrollTop : 0;
+
     /* Toon header + properties secties (panel zelf is altijd zichtbaar) */
     var h2 = panel ? panel.querySelector('h2') : null;
     if (h2) h2.hidden = false;
 
-    var isText = fabricObject.type === 'textbox' || fabricObject.type === 'i-text';
+    var isText = fabricObject.type === 'textbox' || fabricObject.type === 'i-text' || fabricObject.type === 'text';
 
     /* Tekst-specifieke secties */
     toggleSection('text-props', isText);
@@ -53,6 +58,11 @@ var KaartProperties = (function () {
     toggleSection('transform-section', true);
 
     populateFromObject(fabricObject);
+
+    /* Herstel scroll positie */
+    if (panel) {
+      panel.scrollTop = scrollTop;
+    }
   }
 
   function hide() {
@@ -83,7 +93,7 @@ var KaartProperties = (function () {
   function populateFromObject(obj) {
     updating = true;
 
-    var isText = obj.type === 'textbox' || obj.type === 'i-text';
+    var isText = obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text';
 
     if (isText) {
       /* Font */
@@ -149,6 +159,18 @@ var KaartProperties = (function () {
       var tbg = obj.textBackgroundColor || '';
       if (textBgColor) textBgColor.value = tbg || '#ffffff';
       if (textBgColorHex) textBgColorHex.value = tbg ? tbg.toUpperCase() : '';
+
+      /* Tekst op pad */
+      var pathShapeEl  = document.getElementById('prop-path-shape');
+      var pathRadiusSlider = document.getElementById('prop-path-radius-slider');
+      var pathRadiusInput  = document.getElementById('prop-path-radius');
+
+      var currentShape  = obj._kaartPathShape || 'none';
+      var currentRadius = obj._kaartPathRadius || 120;
+
+      if (pathShapeEl)       pathShapeEl.value       = currentShape;
+      if (pathRadiusSlider)  pathRadiusSlider.value   = currentRadius;
+      if (pathRadiusInput)   pathRadiusInput.value    = currentRadius;
     }
 
     /* Transformatie (voor alle typen) */
@@ -471,6 +493,72 @@ var KaartProperties = (function () {
         announceStatus('Element gecentreerd op canvas');
       });
     }
+
+    /* ---- Tekst op pad ---- */
+
+    var pathShapeEl       = document.getElementById('prop-path-shape');
+    var pathRadiusSlider  = document.getElementById('prop-path-radius-slider');
+    var pathRadiusInput   = document.getElementById('prop-path-radius');
+
+    if (pathShapeEl) {
+      pathShapeEl.addEventListener('change', function () {
+        /* Fabric.js wist de canvas-selectie als de gebruiker op een <select> klikt.
+           Gebruik lastActiveObj als fallback wanneer activeObj null is. */
+        var obj = activeObj || lastActiveObj;
+        if (!obj || updating) return;
+        var shape = pathShapeEl.value;
+        var radius = parseInt(pathRadiusInput ? pathRadiusInput.value : 120, 10) || 120;
+        var fabricCanvas = KaartCanvas.getCanvas();
+
+        if (shape === 'none') {
+          /* Pad verwijderen: Text → Textbox */
+          if (obj.type === 'text' && obj._kaartPathShape) {
+            var newObj = KaartTextPath.removePath(fabricCanvas, obj);
+            if (newObj) { activeObj = newObj; lastActiveObj = newObj; }
+            announceStatus('Pad verwijderd — rechte tekst');
+          }
+        } else if (obj.type === 'textbox' || obj.type === 'i-text') {
+          /* Pad toepassen: Textbox → Text */
+          var newObj2 = KaartTextPath.applyPath(fabricCanvas, obj, shape, radius);
+          if (newObj2) { activeObj = newObj2; lastActiveObj = newObj2; }
+          announceStatus('Tekst op pad: ' + shape);
+        } else if (obj.type === 'text') {
+          /* Padvorm wijzigen op bestaand Text object */
+          KaartTextPath.updatePath(obj, shape, radius);
+          fabricCanvas.renderAll();
+          fabricCanvas.fire('object:modified', { target: obj });
+          announceStatus('Padvorm gewijzigd: ' + shape);
+        }
+        /* Herlaad panel om nieuwe staat te reflecteren */
+        var current = activeObj || lastActiveObj;
+        if (current) show(current);
+      });
+    }
+
+    function handlePathRadiusChange() {
+      var obj = activeObj || lastActiveObj;
+      if (!obj || updating || !obj._kaartPathShape) return;
+      var radius = parseInt(pathRadiusInput ? pathRadiusInput.value : 120, 10) || 120;
+      if (pathRadiusSlider) pathRadiusSlider.value = radius;
+      if (pathRadiusInput)  pathRadiusInput.value  = radius;
+      KaartTextPath.updatePath(obj, obj._kaartPathShape, radius);
+      KaartCanvas.getCanvas().renderAll();
+      debouncedFireModified();
+    }
+
+    if (pathRadiusSlider) {
+      pathRadiusSlider.addEventListener('input', function () {
+        if (pathRadiusInput) pathRadiusInput.value = this.value;
+        handlePathRadiusChange();
+      });
+    }
+    if (pathRadiusInput) {
+      pathRadiusInput.addEventListener('change', function () {
+        if (pathRadiusSlider) pathRadiusSlider.value = this.value;
+        handlePathRadiusChange();
+      });
+    }
+
   }
 
   function init() {

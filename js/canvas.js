@@ -64,8 +64,10 @@ var KaartCanvas = (function () {
     var _origToObject = fabric.Object.prototype.toObject;
     fabric.Object.prototype.toObject = function (propertiesToInclude) {
       var obj = _origToObject.call(this, propertiesToInclude);
-      obj.kaartLabel   = this.kaartLabel   || '';
-      obj.kaartAssetId = this.kaartAssetId || '';
+      obj.kaartLabel      = this.kaartLabel      || '';
+      obj.kaartAssetId    = this.kaartAssetId    || '';
+      obj._kaartPathShape  = this._kaartPathShape  || '';
+      obj._kaartPathRadius = this._kaartPathRadius || 0;
       return obj;
     };
   }
