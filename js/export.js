@@ -117,7 +117,17 @@ var KaartExport = (function () {
         if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
         if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
 
-        doc.save(cardTitle + '.pdf');
+        /* doc.save() geeft in Chrome soms een UUID-bestandsnaam zonder extensie.
+           Gebruik een blob + <a download> voor betrouwbare bestandsnaam. */
+        var blob = doc.output('blob');
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
+        a.download = cardTitle + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
         announceStatus('PDF gedownload: ' + cardTitle + '.pdf');
       } catch (e) {
         announceStatus('Fout bij het genereren van de PDF.');
