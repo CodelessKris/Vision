@@ -261,6 +261,28 @@ var KaartStorage = (function () {
       }
     };
 
+    /* Schaal objectposities van sjabloon-referentieafmetingen naar actuele canvas.
+       Sjablonen bevatten _refW/_refH om aan te geven op welke canvasgrootte ze
+       zijn ontworpen. Zonder schaling staan elementen verkeerd gepositioneerd als
+       de actuele canvas afwijkt van die referentie. */
+    if (data._refW && data._refH) {
+      var canvas = KaartCanvas.getCanvas();
+      if (canvas) {
+        var sx = canvas.width  / data._refW;
+        var sy = canvas.height / data._refH;
+        ['front', 'inside'].forEach(function (side) {
+          var json = state[side].json;
+          if (!json || !json.objects) return;
+          json.objects.forEach(function (obj) {
+            obj.left   = (obj.left   || 0) * sx;
+            obj.top    = (obj.top    || 0) * sy;
+            obj.scaleX = (obj.scaleX || 1) * sx;
+            obj.scaleY = (obj.scaleY || 1) * sy;
+          });
+        });
+      }
+    }
+
     /* Herstel asset-registry voor eventuele Pixabay-afbeeldingen in dit bestand. */
     if (data.embeddedAssets && typeof KaartPixabay !== 'undefined') {
       KaartPixabay.restoreAssets(data.embeddedAssets);
@@ -415,6 +437,7 @@ var KaartStorage = (function () {
       return;
     }
     if (!text) return;
+    clearAutosave(); /* wis oude autosave — nieuwe template/bestand vervangt alles */
     parseAndApply(text);
   }
 

@@ -92,6 +92,8 @@ var KaartTemplates = (function () {
       description: 'Warme verjaardagskaart met elegant lettertype',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#fff3e0"/><rect x="20" y="30" width="108" height="16" rx="2" fill="#e65100" opacity="0.7"/><rect x="30" y="60" width="88" height="10" rx="2" fill="#bf360c" opacity="0.5"/><circle cx="74" cy="130" r="30" fill="#ff9800" opacity="0.3"/><rect x="44" y="120" width="60" height="8" rx="1" fill="#e65100" opacity="0.4"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',
@@ -142,6 +144,8 @@ var KaartTemplates = (function () {
       description: 'Zachte kaart om beterschap te wensen',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#e8f5e9"/><rect x="15" y="40" width="118" height="14" rx="2" fill="#2e7d32" opacity="0.6"/><rect x="30" y="68" width="88" height="10" rx="2" fill="#388e3c" opacity="0.4"/><ellipse cx="74" cy="140" rx="20" ry="22" fill="#66bb6a" opacity="0.3"/><ellipse cx="74" cy="130" rx="12" ry="14" fill="#43a047" opacity="0.25"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',
@@ -192,6 +196,8 @@ var KaartTemplates = (function () {
       description: 'Hartelijk bedankkaartje in warme tinten',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#fce4ec"/><rect x="20" y="45" width="108" height="16" rx="2" fill="#c62828" opacity="0.6"/><rect x="35" y="75" width="78" height="10" rx="2" fill="#d32f2f" opacity="0.4"/><path d="M74 130 L60 144 Q52 132 60 126 Q66 122 74 130 Q82 122 88 126 Q96 132 88 144Z" fill="#e57373" opacity="0.5"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',
@@ -242,6 +248,8 @@ var KaartTemplates = (function () {
       description: 'Stoere succeskaart met krachtig lettertype',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#e3f2fd"/><rect x="18" y="40" width="112" height="18" rx="2" fill="#1565c0" opacity="0.7"/><rect x="30" y="72" width="88" height="10" rx="2" fill="#1976d2" opacity="0.4"/><polygon points="74,115 78,128 92,128 80,136 84,150 74,142 64,150 68,136 56,128 70,128" fill="#42a5f5" opacity="0.4"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',
@@ -292,6 +300,8 @@ var KaartTemplates = (function () {
       description: 'Feestelijke uitnodiging in paars en goud',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#f3e5f5"/><rect x="20" y="40" width="108" height="18" rx="2" fill="#6a1b9a" opacity="0.7"/><rect x="30" y="72" width="88" height="10" rx="2" fill="#7b1fa2" opacity="0.4"/><rect x="30" y="120" width="10" height="10" rx="1" fill="#ab47bc" opacity="0.35" transform="rotate(25 35 125)"/><circle cx="74" cy="135" r="5" fill="#ce93d8" opacity="0.4"/><rect x="100" y="115" width="8" height="8" rx="1" fill="#ba68c8" opacity="0.3" transform="rotate(-15 104 119)"/><circle cx="50" cy="150" r="4" fill="#ab47bc" opacity="0.3"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',
@@ -349,6 +359,8 @@ var KaartTemplates = (function () {
       description: 'Romantische kaart met sierlijk lettertype',
       thumbnail: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 148 210"><rect width="148" height="210" rx="4" fill="#ffebee"/><rect x="15" y="45" width="118" height="14" rx="2" fill="#b71c1c" opacity="0.6"/><rect x="30" y="73" width="88" height="10" rx="2" fill="#c62828" opacity="0.4"/><path d="M74 120 L54 140 Q42 124 54 116 Q64 110 74 120 Q84 110 94 116 Q106 124 94 140Z" fill="#ef5350" opacity="0.45"/></svg>',
       kaartData: {
+        _refW: REF_W,
+        _refH: REF_H,
         version: '1.0',
         appName: 'Kaarteditor',
         format: 'A5-dubbel',

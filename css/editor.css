@@ -542,14 +542,10 @@
 
 /* --- Achtergrond-popover -------------------------------------------------- */
 
-.toolbar-popover-anchor {
-  position: relative;
-}
-
+/* position: fixed zodat overflow:hidden op .editor-toolbar de popover niet clipped.
+   left/top worden via JS ingesteld door openBackgroundPopover(). */
 .bg-popover {
-  position: absolute;
-  left: calc(100% + 10px);
-  top: 0;
+  position: fixed;
   z-index: 200;
   background-color: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-accent);
@@ -563,18 +559,15 @@
   display: none;
 }
 
-/* Op smalle schermen (mobiel / 200% zoom): popover onder de knop */
+/* Op smalle schermen (mobiel / 200% zoom): popover onderaan vastgezet */
 @media (max-width: 768px) {
-  .toolbar-popover-anchor {
-    position: static;
-  }
   .bg-popover {
-    position: fixed;
-    left: 12px;
+    left: 12px !important;
     right: 12px;
-    top: auto;
+    top: auto !important;
     bottom: 80px;
     width: auto;
+    min-width: 0;
   }
 }
 
@@ -745,6 +738,24 @@ input[type="checkbox"] {
   padding: 12px 0 0;
   overflow-wrap: break-word;
   word-break: break-word;
+  /* Slanke scrollbar (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-bg-surface) transparent;
+}
+
+/* Slanke scrollbar (Chrome/Edge/Safari) */
+.element-list-panel::-webkit-scrollbar {
+  width: 5px;
+}
+.element-list-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.element-list-panel::-webkit-scrollbar-thumb {
+  background: var(--color-bg-surface);
+  border-radius: 3px;
+}
+.element-list-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border);
 }
 
 .element-list-panel h2 {
@@ -1296,6 +1307,14 @@ input[type="checkbox"] {
 /* =============================================================================
    Sprint 3 — Afdrukken
    ============================================================================= */
+
+/* Verwijder browser-standaardmarges zodat de A4-lay-out exact op één pagina past.
+   Zonder @page-regel voegt de browser ~15 mm marge toe waardoor de onderkant
+   overloopt naar een tweede pagina. */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
 
 /* Printcontainer: verborgen op scherm, zichtbaar bij @media print. */
 .print-only {

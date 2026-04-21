@@ -95,33 +95,57 @@ var KaartExport = (function () {
 
   /* --- PDF-export --------------------------------------------------------- */
 
+  function buildPDF(frontUrl, insideUrl) {
+    var doc = new jspdf.jsPDF({
+      orientation: 'landscape',
+      unit:        'mm',
+      format:      'a4'
+    });
+    if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
+    if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
+    return doc;
+  }
+
+  /* Betrouwbare download via blob-URL. Data-URI's falen stil bij grote PDFs
+     (>4 MB). Blob-URL's werken ook buiten een gebruikersgebaar-context. */
+  function downloadViaBlob(doc, filename) {
+    /* jsPDF's eigen save() gebruikt intern FileSaver.js — betrouwbaarste
+       methode voor cross-browser blob-downloads met correcte bestandsnaam.
+       Op localhost kan Chrome UUID-namen tonen (HTTP vs HTTPS restrictie),
+       maar op productie (HTTPS) werkt dit correct. */
+    doc.save(filename);
+  }
+
   function downloadPDF() {
     if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
       announceStatus('PDF-bibliotheek niet geladen — herlaad de pagina.');
       return;
     }
 
-    announceStatus('PDF wordt gegenereerd\u2026');
-
     var cardTitle = (document.getElementById('card-title') || {}).textContent
                   || 'Kaart';
+    var filename  = cardTitle + '.pdf';
+
+    /* Blob-download direct vanuit de renderBothSides-callback.
+       showSaveFilePicker() is bewust verwijderd: die API consumeert Chrome's
+       user-activation, waardoor de blob-fallback geen user-activation meer heeft
+       en Chrome het download-attribuut negeert (UUID-bestandsnaam).
+       Zolang renderBothSides() binnen ~5 s afrond, is de user-activation
+       van de knopklik nog geldig en respecteert Chrome het download-attribuut. */
+
+    announceStatus('PDF wordt gegenereerd\u2026');
 
     renderBothSides(function (frontUrl, insideUrl) {
+      var doc;
       try {
-        var doc = new jspdf.jsPDF({
-          orientation: 'landscape',
-          unit:        'mm',
-          format:      'a4'
-        });
-
-        if (frontUrl)  doc.addImage(frontUrl,  'PNG', 0,      0, HALF_W, A4_H_MM);
-        if (insideUrl) doc.addImage(insideUrl, 'PNG', HALF_W, 0, HALF_W, A4_H_MM);
-
-        doc.save(cardTitle + '.pdf');
-        announceStatus('PDF gedownload: ' + cardTitle + '.pdf');
+        doc = buildPDF(frontUrl, insideUrl);
       } catch (e) {
         announceStatus('Fout bij het genereren van de PDF.');
+        return;
       }
+
+      downloadViaBlob(doc, filename);
+      announceStatus('PDF gedownload: ' + filename);
     });
   }
 

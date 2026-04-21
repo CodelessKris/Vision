@@ -77,6 +77,19 @@ var KaartToolbar = (function () {
     if (picker) picker.value = current;
     if (hexInput) hexInput.value = current.toUpperCase();
 
+    /* Positie: rechts van de knop, gebaseerd op viewport-coördinaten (position:fixed).
+       Gebruik de knop-afmetingen om te voorkomen dat de popover buiten het scherm valt. */
+    if (btn) {
+      var rect = btn.getBoundingClientRect();
+      var popW = 240; /* min-width + padding marge */
+      var left = rect.right + 10;
+      if (left + popW > window.innerWidth) {
+        left = rect.left - popW - 10;
+      }
+      popover.style.top  = rect.top + 'px';
+      popover.style.left = left + 'px';
+    }
+
     popover.hidden = false;
     bgPopoverOpen = true;
     if (btn) btn.setAttribute('aria-expanded', 'true');
